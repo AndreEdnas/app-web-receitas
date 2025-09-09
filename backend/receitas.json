@@ -1,0 +1,44 @@
+[
+  {
+    "id": 28,
+    "nome": "ALHO FRANCES PORT.CAT.II (KG)",
+    "ingredientes": [
+      {
+        "produto": "ABACAXI DELMONTE CAT.II (KG)",
+        "quantidade": "12",
+        "unidade": "Kg",
+        "preco": 1.46,
+        "subtotal": 17.52
+      },
+      {
+        "produto": "MAÇÃ BRAVO ESMOLFO PORT.CAT.II",
+        "quantidade": "12",
+        "unidade": "Kg",
+        "preco": 2.2,
+        "subtotal": 26.400000000000002
+      },
+      {
+        "produto": "MAÇÃ BRAVO ESMOLFO PORT.CAT.II",
+        "quantidade": "2",
+        "unidade": "Kg",
+        "preco": 2.2,
+        "subtotal": 4.4
+      }
+    ],
+    "total": 48.32
+  },
+  {
+    "id": 1,
+    "nome": "ABACAXI DELMONTE CAT.II (KG)",
+    "ingredientes": [
+      {
+        "produto": "Corte Júnior (Lavagem e secagem até 12 anos)",
+        "quantidade": "1",
+        "unidade": "Unidade",
+        "preco": 13.99,
+        "subtotal": 13.99
+      }
+    ],
+    "total": 13.99
+  }
+]
