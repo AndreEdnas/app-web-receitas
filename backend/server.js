@@ -34,8 +34,10 @@ app.get("/api/produtos", async (req, res) => {
         p.codbarras,
         p.codigo,
         p.descricao,
+        p.precocompra,
         p.precovenda,
         p.unidade,
+        p.margembruta,
         u.descricao AS unidadeDescricao
       FROM produtos p
       LEFT JOIN unidades u
@@ -46,7 +48,9 @@ app.get("/api/produtos", async (req, res) => {
       codbarras: p.codbarras,
       codigo: p.codigo,
       descricao: p.descricao,
-      precovenda: p.precovenda,       // adiciona aqui
+      precovenda: p.precovenda,   
+      precocompra: p.precocompra,  
+      margembruta: p.margembruta, 
       unidade: { codigo: p.unidade, descricao: p.unidadeDescricao }
     }));
 

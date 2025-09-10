@@ -1,44 +1,40 @@
 [
   {
-    "id": 28,
-    "nome": "ALHO FRANCES PORT.CAT.II (KG)",
+    "id": 416,
+    "nome": "Crepe",
     "ingredientes": [
       {
+        "id": 1,
         "produto": "ABACAXI DELMONTE CAT.II (KG)",
-        "quantidade": "12",
+        "quantidade": 2,
         "unidade": "Kg",
-        "preco": 1.46,
-        "subtotal": 17.52
+        "preco": 2.5,
+        "subtotal": 5
       },
       {
-        "produto": "MAÇÃ BRAVO ESMOLFO PORT.CAT.II",
-        "quantidade": "12",
+        "id": 2,
+        "produto": "BANANA EXTRA COSTA RICA (KG)",
+        "quantidade": 2,
         "unidade": "Kg",
-        "preco": 2.2,
-        "subtotal": 26.400000000000002
-      },
-      {
-        "produto": "MAÇÃ BRAVO ESMOLFO PORT.CAT.II",
-        "quantidade": "2",
-        "unidade": "Kg",
-        "preco": 2.2,
-        "subtotal": 4.4
+        "preco": 1.5,
+        "subtotal": 3
       }
     ],
-    "total": 48.32
+    "total": 8
   },
   {
     "id": 1,
     "nome": "ABACAXI DELMONTE CAT.II (KG)",
     "ingredientes": [
       {
-        "produto": "Corte Júnior (Lavagem e secagem até 12 anos)",
-        "quantidade": "1",
-        "unidade": "Unidade",
-        "preco": 13.99,
-        "subtotal": 13.99
+        "id": 1,
+        "produto": "ABACAXI DELMONTE CAT.II (KG)",
+        "quantidade": 2.23,
+        "unidade": "Kg",
+        "preco": 2.5,
+        "subtotal": 5.575
       }
     ],
-    "total": 13.99
+    "total": 5.575
   }
 ]

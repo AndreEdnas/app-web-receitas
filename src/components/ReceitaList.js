@@ -18,7 +18,6 @@ export default function ReceitaList({ receitas = [], onApagar, onEditar }) {
 
   return (
     <div className="mb-5">
-      <h2 className="text-center text-primary mb-4 fs-3">📋 Receitas</h2>
       {receitas.map((r) => (
         <div key={r.id} className="table-responsive mb-4">
           <table className="table table-bordered table-hover text-center align-middle">

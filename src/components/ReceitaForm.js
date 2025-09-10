@@ -21,6 +21,7 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
   const [highlightIdx, setHighlightIdx] = useState(-1);
   const dropdownRefs = useRef({});
 
+  // carregar produtos da BD
   useEffect(() => {
     if (!apiUrl) return;
     (async () => {
@@ -34,12 +35,35 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
     })();
   }, [apiUrl]);
 
+  // atualizar o form quando entrar em edição (já com preços da BD)
+  // atualizar o form quando entrar em edição (já com preços atuais da BD)
   useEffect(() => {
-    if (receitaEditando) {
-      setNome(receitaEditando.nome);
-      setIngredientes(receitaEditando.ingredientes || []);
-    }
-  }, [receitaEditando]);
+    if (!receitaEditando) return;
+    if (!produtos.length) return; // espera até produtos estarem carregados
+
+    setNome(receitaEditando.nome);
+
+    const ingredientesAtualizados = (receitaEditando.ingredientes || []).map((ing) => {
+      const prod = produtos.find(
+        (p) => (p.descricao || "").toLowerCase() === (ing.produto || "").toLowerCase()
+      );
+
+      const quantidade = parseFloat(ing.quantidade) || 0;
+      const precoAtual = prod ? Number(prod.precocompra) || 0 : Number(ing.preco) || 0;
+      const unidadeAtual = prod?.unidade?.descricao || ing.unidade || "";
+
+      return {
+        ...ing,
+        unidade: unidadeAtual,
+        preco: precoAtual,
+        subtotal: precoAtual * quantidade,
+      };
+    });
+
+    setIngredientes(ingredientesAtualizados);
+  }, [receitaEditando, produtos]);
+
+
 
   useEffect(() => {
     if (!nome || !produtos.length) return;
@@ -86,6 +110,11 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
     } else if (e.key === "Escape") { setNomeOpen(false); setNomeHl(-1); }
   };
 
+  const removerIngrediente = (index) => {
+    const novos = ingredientes.filter((_, i) => i !== index);
+    setIngredientes(novos);
+  };
+
   const handleIngredienteChange = (index, field, value) => {
     const novos = [...ingredientes];
     novos[index][field] = value;
@@ -94,7 +123,7 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
       const lower = value.toLowerCase();
       const produtoSelecionado = produtos.find(p => (p.descricao || "").toLowerCase() === lower) || null;
       novos[index].unidade = produtoSelecionado?.unidade?.descricao || "";
-      const preco = produtoSelecionado?.precovenda;
+      const preco = produtoSelecionado?.precocompra;
       novos[index].preco = preco !== undefined && preco !== null ? Number(preco) : 0;
     }
 
@@ -102,13 +131,20 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
   };
 
   const escolherProdutoIngrediente = (rowIdx, produtoObj) => {
-    const novos = [...ingredientes];
-    novos[rowIdx].produto = produtoObj.descricao;
-    novos[rowIdx].unidade = produtoObj?.unidade?.descricao || "";
-    novos[rowIdx].preco   = produtoObj?.precovenda !== undefined && produtoObj?.precovenda !== null ? Number(produtoObj.precovenda) : 0;
-    setIngredientes(novos);
-    setOpenIdx(null); setHighlightIdx(-1);
+  const novos = [...ingredientes];
+  novos[rowIdx] = {
+    ...novos[rowIdx],
+    id: produtoObj.codigo, // 👈 guarda o código do produto da BD
+    produto: produtoObj.descricao,
+    unidade: produtoObj?.unidade?.descricao || "",
+    preco: produtoObj?.precocompra !== undefined && produtoObj?.precocompra !== null
+      ? Number(produtoObj.precocompra)
+      : 0
   };
+  setIngredientes(novos);
+  setOpenIdx(null);
+  setHighlightIdx(-1);
+};
 
   const calcularTotal = () => {
     return ingredientes.reduce((total, ing) => {
@@ -144,7 +180,7 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
       const qtd = parseFloat(ing.quantidade);
       if (!(qtd > 0)) { mostrarMsg(`Quantidade inválida no ingrediente #${i + 1}.`, "warning"); return null; }
       const un = ing.unidade || prod?.unidade?.descricao || "";
-      const pr = Number(ing.preco ?? prod?.precovenda ?? 0);
+      const pr = Number(ing.preco ?? prod?.precocompra ?? 0);
       if (!un) { mostrarMsg(`Unidade em falta no ingrediente #${i + 1}.`, "warning"); return null; }
       if (!(pr > 0)) { mostrarMsg(`Preço inválido no ingrediente #${i + 1}.`, "warning"); return null; }
     }
@@ -159,17 +195,25 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
     if (!prodReceita) return;
 
     const ingredientesComUnidade = ingredientes.map((ing) => {
-      const prod = produtos.find(p => (p.descricao || "") === ing.produto) ||
-                   produtos.find(p => (p.descricao || "").toLowerCase() === (ing.produto || "").toLowerCase());
-      const preco = Number(prod?.precovenda ?? ing.preco ?? 0);
-      const quantidade = parseFloat(ing.quantidade) || 0;
-      return {
-        ...(ing || {}),
-        unidade: prod?.unidade?.descricao || ing.unidade || "",
-        preco,
-        subtotal: preco * quantidade,
-      };
-    });
+  const prod = produtos.find(
+    (p) => (p.descricao || "").toLowerCase() === (ing.produto || "").toLowerCase()
+  );
+
+  const quantidade = parseFloat(ing.quantidade) || 0;
+  const precoAtual = prod ? Number(prod.precocompra) || 0 : Number(ing.preco) || 0;
+  const unidadeAtual = prod?.unidade?.descricao || ing.unidade || "";
+
+  return {
+    id: prod?.codigo || ing.id, // 👈 garante que o id vem do produto
+    produto: ing.produto,
+    quantidade,
+    unidade: unidadeAtual,
+    preco: precoAtual,
+    subtotal: precoAtual * quantidade,
+  };
+});
+
+
 
     const receitaFinal = {
       id: prodReceita.codigo,           // id = codigo do produto
@@ -195,7 +239,8 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
     // reset
     setNome("");
     setProdutoSelecionadoParaReceita(null);
-    setIngredientes([{ produto: "", quantidade: "", unidade: "", preco: 0 }]);
+    setIngredientes([{ id: null, produto: "", quantidade: "", unidade: "", preco: 0 }]);
+
   };
 
   return (
@@ -225,7 +270,7 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
         />
         {nomeOpen && sugestoesNome.length > 0 && (
           <ul className="list-group position-absolute w-100"
-              style={{ zIndex: 1000, maxHeight: "220px", overflowY: "auto", top: "100%", left: 0 }}>
+            style={{ zIndex: 1000, maxHeight: "220px", overflowY: "auto", top: "100%", left: 0 }}>
             {sugestoesNome.map((p, idx) => (
               <li
                 key={p.codigo ?? p.codbarras ?? `${p.descricao}-${idx}`}
@@ -238,7 +283,7 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
                 <div className="d-flex justify-content-between">
                   <span>{p.descricao}</span>
                   <small>
-                    {p.unidade?.descricao ? `(${p.unidade.descricao})` : ""} {p.precovenda ? `• ${Number(p.precovenda).toFixed(2)} €` : ""}
+                    {p.unidade?.descricao ? `(${p.unidade.descricao})` : ""} {p.precocompra ? `• ${Number(p.precocompra).toFixed(2)} €` : ""}
                   </small>
                 </div>
               </li>
@@ -251,42 +296,79 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
       {ingredientes.map((ing, i) => {
         const sugestoes = filtrar(ing.produto);
         return (
-          <div key={i} className="mb-2" ref={el => (dropdownRefs.current[i] = el)} style={{ position: "relative" }}>
+          <div
+            key={i}
+            className="mb-2"
+            ref={(el) => (dropdownRefs.current[i] = el)}
+            style={{ position: "relative" }}
+          >
             <div className="d-flex gap-2 align-items-center">
               <div style={{ flex: 2 }}>
                 <input
                   type="text"
                   placeholder="Produto"
                   value={ing.produto}
-                  onChange={(e) => { handleIngredienteChange(i, "produto", e.target.value); setOpenIdx(i); setHighlightIdx(-1); }}
+                  onChange={(e) => {
+                    handleIngredienteChange(i, "produto", e.target.value);
+                    setOpenIdx(i);
+                    setHighlightIdx(-1);
+                  }}
                   onFocus={() => setOpenIdx(i)}
                   onKeyDown={(e) => {
-                    const items = sugestoes; if (!items.length) return;
-                    if (e.key === "ArrowDown") { e.preventDefault(); setHighlightIdx((prev) => (prev + 1) % items.length); }
-                    else if (e.key === "ArrowUp") { e.preventDefault(); setHighlightIdx((prev) => (prev - 1 + items.length) % items.length); }
-                    else if (e.key === "Enter") {
-                      if (highlightIdx >= 0 && highlightIdx < items.length) { e.preventDefault(); escolherProdutoIngrediente(i, items[highlightIdx]); }
-                    } else if (e.key === "Escape") { setOpenIdx(null); setHighlightIdx(-1); }
+                    const items = sugestoes;
+                    if (!items.length) return;
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setHighlightIdx((prev) => (prev + 1) % items.length);
+                    } else if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setHighlightIdx((prev) => (prev - 1 + items.length) % items.length);
+                    } else if (e.key === "Enter") {
+                      if (highlightIdx >= 0 && highlightIdx < items.length) {
+                        e.preventDefault();
+                        escolherProdutoIngrediente(i, items[highlightIdx]);
+                      }
+                    } else if (e.key === "Escape") {
+                      setOpenIdx(null);
+                      setHighlightIdx(-1);
+                    }
                   }}
                   className="form-control"
                   autoComplete="off"
                 />
                 {openIdx === i && sugestoes.length > 0 && (
-                  <ul className="list-group position-absolute w-100"
-                      style={{ zIndex: 1000, maxHeight: "220px", overflowY: "auto", top: "100%", left: 0 }}>
+                  <ul
+                    className="list-group position-absolute w-100"
+                    style={{
+                      zIndex: 1000,
+                      maxHeight: "220px",
+                      overflowY: "auto",
+                      top: "100%",
+                      left: 0,
+                    }}
+                  >
                     {sugestoes.map((p, idx) => (
                       <li
                         key={p.codigo ?? p.codbarras ?? `${p.descricao}-${idx}`}
-                        className={`list-group-item list-group-item-action ${idx === highlightIdx ? "active" : ""}`}
+                        className={`list-group-item list-group-item-action ${idx === highlightIdx ? "active" : ""
+                          }`}
                         onMouseEnter={() => setHighlightIdx(idx)}
-                        onMouseDown={(e) => { e.preventDefault(); escolherProdutoIngrediente(i, p); }}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          escolherProdutoIngrediente(i, p);
+                        }}
                         style={{ cursor: "pointer" }}
                         title={p.descricao}
                       >
                         <div className="d-flex justify-content-between">
                           <span>{p.descricao}</span>
                           <small>
-                            {p.unidade?.descricao ? `(${p.unidade.descricao})` : ""} {p.precovenda ? `• ${Number(p.precovenda).toFixed(2)} €` : ""}
+                            {p.unidade?.descricao
+                              ? `(${p.unidade.descricao})`
+                              : ""}{" "}
+                            {p.precocompra
+                              ? `• ${Number(p.precocompra).toFixed(2)} €`
+                              : ""}
                           </small>
                         </div>
                       </li>
@@ -299,7 +381,9 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
                 type="number"
                 placeholder="Qtd"
                 value={ing.quantidade}
-                onChange={(e) => handleIngredienteChange(i, "quantidade", e.target.value)}
+                onChange={(e) =>
+                  handleIngredienteChange(i, "quantidade", e.target.value)
+                }
                 className="form-control"
                 style={{ maxWidth: "100px" }}
                 min="0"
@@ -307,11 +391,23 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
                 required
               />
               <span style={{ minWidth: 60 }}>{ing.unidade}</span>
-              <span style={{ minWidth: 90 }}>{ing.preco ? `${Number(ing.preco).toFixed(2)} €` : ""}</span>
+              <span style={{ minWidth: 90 }}>
+                {ing.preco ? `${Number(ing.preco).toFixed(2)} €` : ""}
+              </span>
+
+              {/* Botão de apagar ingrediente */}
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-danger"
+                onClick={() => removerIngrediente(i)}
+              >
+                ❌
+              </button>
             </div>
           </div>
         );
       })}
+
 
       <div className="mt-3">
         <strong>Valor Total da Receita: </strong> {calcularTotal().toFixed(2)} €

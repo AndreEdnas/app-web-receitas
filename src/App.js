@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import ReceitasPage from "./pages/ReceitasPage"; // <- corrigido
+import ReceitasPage from "./pages/ReceitasPage";
+import CalculoPage from "./pages/CalculoPage"; // 👈 importa a nova página
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -10,11 +11,12 @@ function App() {
         <h1 style={styles.titulo}>🍴 Gestão de Produtos & Receitas</h1>
 
         <nav style={styles.nav}>
-          <Link style={styles.link} to="/produtos">Produtos</Link>
-          <Link style={styles.link} to="/receitas">Receitas</Link> {/* <- corrigido */}
+          <Link style={styles.link} to="/calculo">Cálculo</Link>
+          <Link style={styles.link} to="/receitas">Receitas</Link>
         </nav>
 
         <Routes>
+          <Route path="/calculo" element={<CalculoPage />} /> {/* 👈 nova rota */}
           <Route path="/receitas" element={<ReceitasPage />} />
           <Route path="/" element={<Home />} />
         </Routes>
