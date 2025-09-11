@@ -8,19 +8,19 @@
         "produto": "ABACAXI DELMONTE CAT.II (KG)",
         "quantidade": 2,
         "unidade": "Kg",
-        "preco": 2.5,
-        "subtotal": 5
+        "preco": 2,
+        "subtotal": 4
       },
       {
         "id": 2,
         "produto": "BANANA EXTRA COSTA RICA (KG)",
-        "quantidade": 2,
+        "quantidade": 0.2,
         "unidade": "Kg",
         "preco": 1.5,
-        "subtotal": 3
+        "subtotal": 0.30000000000000004
       }
     ],
-    "total": 8
+    "total": 4.3
   },
   {
     "id": 1,
@@ -29,12 +29,12 @@
       {
         "id": 1,
         "produto": "ABACAXI DELMONTE CAT.II (KG)",
-        "quantidade": 2.23,
+        "quantidade": 1,
         "unidade": "Kg",
-        "preco": 2.5,
-        "subtotal": 5.575
+        "preco": 2,
+        "subtotal": 2
       }
     ],
-    "total": 5.575
+    "total": 2
   }
 ]

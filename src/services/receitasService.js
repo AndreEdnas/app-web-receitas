@@ -1,7 +1,7 @@
 const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
 
 export async function getReceitas(apiUrl) {
-  const res = await fetch(`${apiUrl}/api/receitas`, {
+  const res = await fetch(`${apiUrl}/receitas`, {
     headers: NGROK_HEADERS,
   });
   if (!res.ok) {
@@ -13,7 +13,7 @@ export async function getReceitas(apiUrl) {
 
 
 export async function addReceita(apiUrl, receita) {
-  const res = await fetch(`${apiUrl}/api/receitas`, {
+  const res = await fetch(`${apiUrl}/receitas`, {
     method: "POST",
     headers: { 
       "Content-Type": "application/json",
@@ -25,7 +25,7 @@ export async function addReceita(apiUrl, receita) {
 }
 
 export async function deleteReceita(apiUrl, id) {
-  const res = await fetch(`${apiUrl}/api/receitas/${id}`, { 
+  const res = await fetch(`${apiUrl}/receitas/${id}`, { 
     method: "DELETE",
     headers: NGROK_HEADERS,
   });
@@ -33,7 +33,7 @@ export async function deleteReceita(apiUrl, id) {
 }
 
 export async function updateReceita(apiUrl, id, receita) {
-  const res = await fetch(`${apiUrl}/api/receitas/${id}`, {
+  const res = await fetch(`${apiUrl}/receitas/${id}`, {
     method: "PUT",
     headers: { 
       "Content-Type": "application/json",

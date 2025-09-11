@@ -26,7 +26,7 @@ const sqlConfig = {
 
 
 // GET produtos
-app.get("/api/produtos", async (req, res) => {
+app.get("/produtos", async (req, res) => {
   try {
     const pool = await sql.connect(sqlConfig);
     const result = await pool.request().query(`
@@ -38,6 +38,7 @@ app.get("/api/produtos", async (req, res) => {
         p.precovenda,
         p.unidade,
         p.margembruta,
+        p.qtdstock,
         u.descricao AS unidadeDescricao
       FROM produtos p
       LEFT JOIN unidades u
@@ -51,6 +52,7 @@ app.get("/api/produtos", async (req, res) => {
       precovenda: p.precovenda,   
       precocompra: p.precocompra,  
       margembruta: p.margembruta, 
+      qtdstock: p.qtdstock,
       unidade: { codigo: p.unidade, descricao: p.unidadeDescricao }
     }));
 
@@ -61,6 +63,32 @@ app.get("/api/produtos", async (req, res) => {
   }
 });
 
+// PATCH produto (atualizar qtdstock)
+app.patch("/produtos/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { qtdstock } = req.body;
+    const pool = await sql.connect(sqlConfig);
+    const result = await pool.request()
+      .input("id", sql.Int, id) // usa VarChar se codigo não for INT
+      .input("qtdstock", sql.Decimal(18, 2), qtdstock)
+      .query("UPDATE produtos SET qtdstock = @qtdstock WHERE codigo = @id");
+
+    console.log("Linhas afetadas:", result.rowsAffected);
+
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ error: "Produto não encontrado" });
+    }
+
+    res.json({ message: "✅ Stock atualizado", id, qtdstock });
+  } catch (err) {
+    console.error("Erro ao atualizar produto:", err);
+    res.status(500).json({ error: "Erro ao atualizar produto" });
+  }
+});
+
+
+
 
 
 
@@ -70,7 +98,7 @@ app.get("/api/produtos", async (req, res) => {
 const filePath = path.join(__dirname, "receitas.json");
 
 // GET todas as receitas
-app.get("/api/receitas", (req, res) => {
+app.get("/receitas", (req, res) => {
   try {
     if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "[]");
     const data = fs.readFileSync(filePath, "utf-8");
@@ -82,7 +110,7 @@ app.get("/api/receitas", (req, res) => {
 });
 
 // POST nova receita
-app.post("/api/receitas", (req, res) => {
+app.post("/receitas", (req, res) => {
   try {
     const receitas = fs.existsSync(filePath)
       ? JSON.parse(fs.readFileSync(filePath, "utf-8"))
@@ -100,7 +128,7 @@ app.post("/api/receitas", (req, res) => {
 });
 
 // DELETE receita por id
-app.delete("/api/receitas/:id", (req, res) => {
+app.delete("/receitas/:id", (req, res) => {
   try {
     const id = parseInt(req.params.id);
     let receitas = fs.existsSync(filePath)
@@ -118,7 +146,7 @@ app.delete("/api/receitas/:id", (req, res) => {
 });
 
 // PUT atualizar receita por id
-app.put("/api/receitas/:id", (req, res) => {
+app.put("/receitas/:id", (req, res) => {
   try {
     const id = parseInt(req.params.id); // id da receita (vai ser o codigo do produto)
     let receitas = fs.existsSync(filePath)
