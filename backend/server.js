@@ -195,8 +195,8 @@ app.put("/receitas/:id", (req, res) => {
   }
 });
 
-app.listen(3001, () => {
-  console.log("Servidor a correr em http://localhost:3001");
+app.listen(3051, () => {
+  console.log("Servidor a correr em http://localhost:3051");
 });
 
 
@@ -257,5 +257,29 @@ app.get("/abates", (req, res) => {
   } catch (err) {
     console.error("Erro ao ler abates:", err);
     res.status(500).json({ error: "Erro ao ler abates" });
+  }
+});
+
+
+
+
+
+app.get('/ngrok-url', async (req, res) => {
+  try {
+    const response = await fetch('http://127.0.0.1:4040/api/tunnels', {
+      headers: { 'Accept': 'application/json' }
+    });
+
+    const data = await response.json();
+
+    if (data.tunnels && data.tunnels.length > 0) {
+      // Pega na primeira URL pública
+      res.json({ url: data.tunnels[0].public_url });
+    } else {
+      res.json({ url: null, message: 'Ngrok não encontrado' });
+    }
+  } catch (err) {
+    console.error('Erro ao obter ngrok URL:', err);
+    res.status(500).json({ url: null, error: 'Erro ao obter ngrok URL' });
   }
 });
