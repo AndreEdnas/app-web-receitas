@@ -49,9 +49,9 @@ app.get("/produtos", async (req, res) => {
       codbarras: p.codbarras,
       codigo: p.codigo,
       descricao: p.descricao,
-      precovenda: p.precovenda,   
-      precocompra: p.precocompra,  
-      margembruta: p.margembruta, 
+      precovenda: p.precovenda,
+      precocompra: p.precocompra,
+      margembruta: p.margembruta,
       qtdstock: p.qtdstock,
       unidade: { codigo: p.unidade, descricao: p.unidadeDescricao }
     }));
@@ -62,6 +62,7 @@ app.get("/produtos", async (req, res) => {
     res.status(500).json({ erro: "Erro ao carregar produtos" });
   }
 });
+
 
 // PATCH produto (atualizar qtdstock)
 app.patch("/produtos/:id", async (req, res) => {
@@ -86,6 +87,31 @@ app.patch("/produtos/:id", async (req, res) => {
     res.status(500).json({ error: "Erro ao atualizar produto" });
   }
 });
+
+// GET vendas por data
+app.get("/vendas/:data", async (req, res) => {
+  try {
+    const { data } = req.params; // dd-mm-yyyy
+    const [dia, mes, ano] = data.split("-");
+    const dataSQL = `${ano}-${mes}-${dia}`; // yyyy-mm-dd
+
+    const pool = await sql.connect(sqlConfig);
+    const result = await pool.request()
+      .input("data", sql.Date, dataSQL)
+      .query(`
+        SELECT descricao, qtd, data
+        FROM vendas
+        WHERE CAST(data AS DATE) = @data
+      `);
+
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Erro ao buscar vendas:", err);
+    res.status(500).json({ error: "Erro ao buscar vendas" });
+  }
+});
+
+
 
 
 
@@ -171,4 +197,65 @@ app.put("/receitas/:id", (req, res) => {
 
 app.listen(3001, () => {
   console.log("Servidor a correr em http://localhost:3001");
+});
+
+
+
+
+// =======================
+// ABATES JSON
+// =======================
+
+const abatesFile = path.join(__dirname, "abates.json");
+
+// cria o ficheiro se não existir
+if (!fs.existsSync(abatesFile)) {
+  fs.writeFileSync(abatesFile, "{}"); // 👉 agora começa como objeto
+}
+
+// POST - guardar abate
+app.post("/abates", (req, res) => {
+  try {
+    const abates = fs.existsSync(abatesFile)
+      ? JSON.parse(fs.readFileSync(abatesFile, "utf-8"))
+      : {};
+
+    // data passada pelo frontend OU hoje
+    const dataDia = req.body.data
+      ? req.body.data.split("T")[0] // só yyyy-mm-dd
+      : new Date().toISOString().split("T")[0];
+
+    // garantir array para esse dia
+    if (!abates[dataDia]) {
+      abates[dataDia] = [];
+    }
+
+    const novoAbate = {
+      id: Date.now(),
+      registros: Array.isArray(req.body.registros)
+        ? req.body.registros
+        : [req.body.registros],
+    };
+
+    abates[dataDia].push(novoAbate);
+
+    fs.writeFileSync(abatesFile, JSON.stringify(abates, null, 2));
+
+    res.status(201).json(novoAbate);
+  } catch (err) {
+    console.error("Erro ao guardar abate:", err);
+    res.status(500).json({ error: "Erro ao guardar abate" });
+  }
+});
+
+// GET - listar abates
+app.get("/abates", (req, res) => {
+  try {
+    if (!fs.existsSync(abatesFile)) return res.json({});
+    const data = fs.readFileSync(abatesFile, "utf-8");
+    res.json(JSON.parse(data));
+  } catch (err) {
+    console.error("Erro ao ler abates:", err);
+    res.status(500).json({ error: "Erro ao ler abates" });
+  }
 });

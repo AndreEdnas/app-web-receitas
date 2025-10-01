@@ -2,7 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import ReceitasPage from "./pages/ReceitasPage";
 import ProducaoPage from "./pages/ProduzirReceitaPage";
-import CalculoPage from "./pages/CalculoPage"; // 👈 importa a nova página
+import CalculoPage from "./pages/CalculoPage";
+import AbatesPage from "./pages/AbatesPage"; // 👈 importa a nova página
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -15,12 +16,14 @@ function App() {
           <Link style={styles.link} to="/calculo">Cálculo</Link>
           <Link style={styles.link} to="/receitas">Receitas</Link>
           <Link style={styles.link} to="/producao">Produção de Receitas</Link>
+          <Link style={styles.link} to="/abates">Histórico</Link> {/* 👈 novo link */}
         </nav>
 
         <Routes>
-          <Route path="/calculo" element={<CalculoPage />} /> {/* 👈 nova rota */}
+          <Route path="/calculo" element={<CalculoPage />} />
           <Route path="/receitas" element={<ReceitasPage />} />
-           <Route path="/producao" element={<ProducaoPage />} />
+          <Route path="/producao" element={<ProducaoPage />} />
+          <Route path="/abates" element={<AbatesPage />} /> {/* 👈 nova rota */}
           <Route path="/" element={<Home />} />
         </Routes>
       </div>

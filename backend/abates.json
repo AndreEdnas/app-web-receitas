@@ -1,0 +1,159 @@
+{
+  "11-09-2025": [
+    {
+      "id": 1757694925102,
+      "registros": [
+        {
+          "tipo": "produto",
+          "codigo": 27,
+          "produto": "ABOBORA C/CASCA FATIA PORT.CAT.II (KG)",
+          "antes": -14,
+          "abate": 1,
+          "depois": -15
+        },
+        {
+          "tipo": "produto",
+          "codigo": 56,
+          "produto": "AGRIÃO PORT.CAT.II (UN)",
+          "antes": -14,
+          "abate": 1,
+          "depois": -15
+        },
+        {
+          "tipo": "receita",
+          "nome": "ABACAXI DELMONTE CAT.II (KG)",
+          "qtd": 2,
+          "produtos": [
+            {
+              "codigo": 1,
+              "produto": "ABACAXI DELMONTE CAT.II (KG)",
+              "antes": 56.5,
+              "abate": 2,
+              "depois": 54.5
+            }
+          ]
+        },
+        {
+          "tipo": "produto",
+          "codigo": 11,
+          "produto": "MAÇÃ GOLDEN PORT.CATII (KG)",
+          "antes": -29,
+          "abate": 2,
+          "depois": -31
+        },
+        {
+          "tipo": "venda",
+          "codigo": 381,
+          "produto": "Bacalhau Lagareiro",
+          "antes": 97,
+          "abate": 1,
+          "depois": 96
+        }
+      ]
+    }
+  ],
+  "12-09-2025": [
+    {
+      "id": 1757695487950,
+      "registros": [
+        {
+          "tipo": "produto",
+          "codigo": 27,
+          "produto": "ABOBORA C/CASCA FATIA PORT.CAT.II (KG)",
+          "antes": -15,
+          "abate": 1,
+          "depois": -16
+        },
+        {
+          "tipo": "produto",
+          "codigo": 56,
+          "produto": "AGRIÃO PORT.CAT.II (UN)",
+          "antes": -15,
+          "abate": 1,
+          "depois": -16
+        },
+        {
+          "tipo": "receita",
+          "nome": "ABACAXI DELMONTE CAT.II (KG)",
+          "qtd": 2,
+          "produtos": [
+            {
+              "codigo": 1,
+              "produto": "ABACAXI DELMONTE CAT.II (KG)",
+              "antes": 54.5,
+              "abate": 2,
+              "depois": 52.5
+            }
+          ]
+        },
+        {
+          "tipo": "produto",
+          "codigo": 11,
+          "produto": "MAÇÃ GOLDEN PORT.CATII (KG)",
+          "antes": -31,
+          "abate": 2,
+          "depois": -33
+        },
+        {
+          "tipo": "venda",
+          "codigo": 19,
+          "produto": "PERA ABACATE CAT.II (KG)",
+          "antes": 1,
+          "abate": 1,
+          "depois": 0
+        }
+      ]
+    },
+    {
+      "id": 1757695536852,
+      "registros": [
+        {
+          "tipo": "produto",
+          "codigo": 27,
+          "produto": "ABOBORA C/CASCA FATIA PORT.CAT.II (KG)",
+          "antes": -16,
+          "abate": 1,
+          "depois": -17
+        },
+        {
+          "tipo": "produto",
+          "codigo": 56,
+          "produto": "AGRIÃO PORT.CAT.II (UN)",
+          "antes": -16,
+          "abate": 1,
+          "depois": -17
+        },
+        {
+          "tipo": "receita",
+          "nome": "ABACAXI DELMONTE CAT.II (KG)",
+          "qtd": 2,
+          "produtos": [
+            {
+              "codigo": 1,
+              "produto": "ABACAXI DELMONTE CAT.II (KG)",
+              "antes": 52.5,
+              "abate": 2,
+              "depois": 50.5
+            }
+          ]
+        },
+        {
+          "tipo": "produto",
+          "codigo": 11,
+          "produto": "MAÇÃ GOLDEN PORT.CATII (KG)",
+          "antes": -33,
+          "abate": 2,
+          "depois": -35
+        },
+        {
+          "tipo": "venda",
+          "codigo": 19,
+          "produto": "PERA ABACATE CAT.II (KG)",
+          "antes": 0,
+          "abate": 1,
+          "depois": -1
+        }
+      ]
+    }
+  ]
+}

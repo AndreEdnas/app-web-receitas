@@ -34,3 +34,50 @@ export async function updateProduto(apiUrl, id, data) {
 
 }
 
+export async function getVendasByDate(apiUrl, data) {
+  try {
+    const response = await fetch(`${apiUrl}/vendas/${data}`, {
+      headers: { "ngrok-skip-browser-warning": "true" },
+    });
+    if (!response.ok) throw new Error("Erro ao carregar vendas");
+    return await response.json();
+  } catch (err) {
+    console.error("getVendasByDate error:", err);
+    return [];
+  }
+}
+
+
+
+export async function saveAbate(apiUrl, abate) {
+  try {
+    const response = await fetch(`${apiUrl}/abates`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+      },
+      body: JSON.stringify(abate),
+    });
+    return await response.json();
+  } catch (err) {
+    console.error("saveAbate error:", err);
+    return null;
+  }
+}
+
+export async function getAbates(apiUrl) {
+  try {
+    const response = await fetch(`${apiUrl}/abates`, {
+      headers: { "ngrok-skip-browser-warning": "true" },
+    });
+    if (!response.ok) throw new Error("Erro ao carregar abates");
+    return await response.json();
+  } catch (err) {
+    console.error("getAbates error:", err);
+    return [];
+  }
+}
+
+
+

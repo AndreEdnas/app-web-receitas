@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getReceitas } from "../services/receitasService";
-import { getProdutos, updateProduto } from "../services/produtosService";
+import { getProdutos, updateProduto, getVendasByDate, saveAbate } from "../services/produtosService";
 import { useNgrokUrl } from "../hooks/useNgrokUrl";
 
 export default function ProduzirReceitaPage() {
@@ -24,7 +24,7 @@ export default function ProduzirReceitaPage() {
     })();
   }, [apiUrl]);
 
-  // 📂 Processa TXT (mistura produtos e receitas)
+  // 📂 Processa TXT (produtos + receitas + vendas BD)
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -33,7 +33,7 @@ export default function ProduzirReceitaPage() {
     reader.onload = async (event) => {
       const text = event.target.result;
 
-      // 👉 extrai apenas a data (sem hora)
+      // 👉 extrai a data (sem hora)
       const matchData = text.match(/TALÃO - (\d{2}-\d{2}-\d{4})/);
       const dataExtraida = matchData ? matchData[1] : null;
       setDataTalao(dataExtraida);
@@ -43,6 +43,7 @@ export default function ProduzirReceitaPage() {
       const produtosAtualizados = await getProdutos(apiUrl);
       let lista = [];
 
+      // --- Produtos e receitas do ficheiro ---
       for (const linha of linhas) {
         const match = linha.match(/(\d+)\s*:\s*(\d+)\s*x/i);
         if (!match) continue;
@@ -95,6 +96,30 @@ export default function ProduzirReceitaPage() {
         }
       }
 
+      // --- Vendas da BD (se houver data no talão) ---
+      if (dataExtraida) {
+        const vendas = await getVendasByDate(apiUrl, dataExtraida);
+        for (const venda of vendas) {
+          const produto = produtosAtualizados.find((p) => p.descricao === venda.descricao);
+          if (!produto) {
+            console.warn("❌ Produto da venda não encontrado:", venda.descricao);
+            continue;
+          }
+
+          const stockAntes = Number(produto.qtdstock) || 0;
+          const novoStock = stockAntes - venda.qtd;
+
+          lista.push({
+            tipo: "venda",
+            codigo: produto.codigo,
+            produto: produto.descricao,
+            antes: stockAntes,
+            abate: venda.qtd,
+            depois: novoStock,
+          });
+        }
+      }
+
       setPendentes(lista);
       setResultado(null);
     };
@@ -138,7 +163,7 @@ export default function ProduzirReceitaPage() {
   // ✅ Confirmar abates
   const handleConfirmar = async () => {
     for (const item of pendentes) {
-      if (item.tipo === "produto") {
+      if (item.tipo === "produto" || item.tipo === "venda") {
         await updateProduto(apiUrl, item.codigo, { qtdstock: item.depois });
       } else if (item.tipo === "receita") {
         for (const p of item.produtos) {
@@ -146,6 +171,13 @@ export default function ProduzirReceitaPage() {
         }
       }
     }
+
+    // 👉 Guardar no histórico
+    await saveAbate(apiUrl, {
+      data: dataTalao || new Date().toLocaleDateString(),
+      registros: pendentes,
+    });
+
     setResultado(pendentes);
     setPendentes([]);
     const atualizados = await getProdutos(apiUrl);
@@ -242,86 +274,124 @@ export default function ProduzirReceitaPage() {
           <div className="card-body">
             <h5>📋 Abates pendentes (preview):</h5>
 
-            {/* Mostra data do talão se existir */}
             {dataTalao && (
-              <p className="fw-bold text-secondary">
-                📅 Data do Talão: {dataTalao}
-              </p>
+              <p className="fw-bold text-secondary">📅 Data do Talão: {dataTalao}</p>
             )}
 
-            {/* Tabela geral para produtos diretos */}
-            {pendentes.some((p) => p.tipo === "produto") && (
-              <table className="table table-sm table-bordered mb-4">
-                <thead className="table-light">
-                  <tr>
-                    <th>Produto</th>
-                    <th>Antes</th>
-                    <th>Abate</th>
-                    <th>Depois</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendentes
-                    .filter((p) => p.tipo === "produto")
-                    .map((item, i) => (
-                      <tr key={`produto-${i}`}>
-                        <td>📦 {item.produto}</td>
-                        <td>{item.antes}</td>
-                        <td className="text-danger fw-bold">-{item.abate}</td>
-                        <td>{item.depois}</td>
+            <div className="row">
+              {/* --- Coluna 1: Talão --- */}
+              <div className="col-md-6">
+                <h6 className="text-primary">📄 Talão</h6>
+
+                {/* Produtos diretos */}
+                {pendentes.some((p) => p.tipo === "produto") && (
+                  <table className="table table-sm table-bordered mb-4">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Produto</th>
+                        <th>Antes</th>
+                        <th>Abate</th>
+                        <th>Depois</th>
                       </tr>
-                    ))}
-                </tbody>
-              </table>
-            )}
+                    </thead>
+                    <tbody>
+                      {pendentes
+                        .filter((p) => p.tipo === "produto")
+                        .map((item, i) => (
+                          <tr key={`produto-${i}`}>
+                            <td>📦 {item.produto}</td>
+                            <td>{item.antes}</td>
+                            <td className="text-danger fw-bold">-{item.abate}</td>
+                            <td>{item.depois}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                )}
 
-            {/* Accordion para receitas */}
-            <div className="accordion" id="accordionPreview">
-              {pendentes
-                .filter((p) => p.tipo === "receita")
-                .map((item, i) => (
-                  <div className="accordion-item" key={`receita-${i}`}>
-                    <h2 className="accordion-header" id={`heading${i}`}>
-                      <button
-                        className="accordion-button collapsed fw-bold text-primary"
-                        style={{ backgroundColor: "#e7f1ff" }}
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target={`#collapse${i}`}
-                      >
-                        🍽 Receita: {item.nome} ({item.qtd}x)
-                      </button>
-                    </h2>
-                    <div
-                      id={`collapse${i}`}
-                      className="accordion-collapse collapse"
-                      data-bs-parent="#accordionPreview"
-                    >
-                      <div className="accordion-body">
-                        <table className="table table-sm">
-                          <thead>
-                            <tr>
-                              <th>Produto</th>
-                              <th>Antes</th>
-                              <th>Abate</th>
-                              <th>Depois</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {item.produtos.map((p, j) => (
-                              <tr key={j}>
-                                <td>{p.produto}</td>
-                                <td>{p.antes}</td>
-                                <td className="text-danger">-{p.abate}</td>
-                                <td>{p.depois}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                {/* Receitas */}
+                <div className="accordion" id="accordionPreview">
+                  {pendentes
+                    .filter((p) => p.tipo === "receita")
+                    .map((item, i) => (
+                      <div className="accordion-item" key={`receita-${i}`}>
+                        <h2 className="accordion-header" id={`heading${i}`}>
+                          <button
+                            className="accordion-button collapsed fw-bold text-primary"
+                            style={{ backgroundColor: "#e7f1ff" }}
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target={`#collapse${i}`}
+                          >
+                            🍽 Receita: {item.nome} ({item.qtd}x)
+                          </button>
+                        </h2>
+                        <div
+                          id={`collapse${i}`}
+                          className="accordion-collapse collapse"
+                          data-bs-parent="#accordionPreview"
+                        >
+                          <div className="accordion-body">
+                            <table className="table table-sm">
+                              <thead>
+                                <tr>
+                                  <th>Produto</th>
+                                  <th>Antes</th>
+                                  <th>Abate</th>
+                                  <th>Depois</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {item.produtos.map((p, j) => (
+                                  <tr key={j}>
+                                    <td>{p.produto}</td>
+                                    <td>{p.antes}</td>
+                                    <td className="text-danger">-{p.abate}</td>
+                                    <td>{p.depois}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    ))}
+                </div>
+              </div>
+
+              {/* --- Coluna 2: Vendas BD --- */}
+              <div className="col-md-6">
+                <h6 className="text-success">🛒 Vendas na BD</h6>
+
+                {pendentes.some((p) => p.tipo === "venda") ? (
+                  <table className="table table-sm table-bordered">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Produto</th>
+                        <th>Antes</th>
+                        <th>Abate</th>
+                        <th>Depois</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendentes
+                        .filter((p) => p.tipo === "venda")
+                        .map((item, i) => (
+                          <tr key={`venda-${i}`}>
+                            <td>{item.produto}</td>
+                            <td>{item.antes}</td>
+                            <td className="text-danger fw-bold">-{item.abate}</td>
+                            <td>{item.depois}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className="text-muted">
+                    Nenhuma venda encontrada na BD para esta data.
+                  </p>
+                )}
+              </div>
             </div>
 
             <button className="btn btn-danger mt-3" onClick={handleConfirmar}>
