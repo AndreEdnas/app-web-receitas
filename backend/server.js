@@ -12,23 +12,38 @@ app.use(express.json());
 // =======================
 // CONFIGURAÇÃO SQL SERVER
 // =======================
-const sqlConfig = {
-  user: 'sa',
-  password: 'sa12345',
-  server: 'Andre',
+
+const keytar = require('keytar');
+
+// Função para buscar config da BD
+async function getDbConfig() {
+  const user = await keytar.getPassword("app-web-leitura", "db-user");
+  const password = await keytar.getPassword("app-web-leitura", "db-password");
+
+  if (!user || !password) {
+    throw new Error("❌ Credenciais não encontradas no Credential Manager!");
+  }
+
+  return {
+    user,
+    password,
+   server: 'Andre',
   database: 'DEMOZS',
   port: 1982,
-  options: {
-    encrypt: false,
-    trustServerCertificate: true
-  }
-};
+    options: {
+      encrypt: false,
+      trustServerCertificate: true
+    }
+  };
+}
+
+
 
 
 // GET produtos
 app.get("/produtos", async (req, res) => {
   try {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await sql.connect(await getDbConfig());
     const result = await pool.request().query(`
       SELECT 
         p.codbarras,
@@ -69,7 +84,7 @@ app.patch("/produtos/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { qtdstock } = req.body;
-    const pool = await sql.connect(sqlConfig);
+    const pool = await sql.connect(await getDbConfig());
     const result = await pool.request()
       .input("id", sql.Int, id) // usa VarChar se codigo não for INT
       .input("qtdstock", sql.Decimal(18, 2), qtdstock)
@@ -95,7 +110,8 @@ app.get("/vendas/:data", async (req, res) => {
     const [dia, mes, ano] = data.split("-");
     const dataSQL = `${ano}-${mes}-${dia}`; // yyyy-mm-dd
 
-    const pool = await sql.connect(sqlConfig);
+   const pool = await sql.connect(await getDbConfig());
+
     const result = await pool.request()
       .input("data", sql.Date, dataSQL)
       .query(`
@@ -261,25 +277,3 @@ app.get("/abates", (req, res) => {
 });
 
 
-
-
-
-app.get('/ngrok-url', async (req, res) => {
-  try {
-    const response = await fetch('http://127.0.0.1:4040/api/tunnels', {
-      headers: { 'Accept': 'application/json' }
-    });
-
-    const data = await response.json();
-
-    if (data.tunnels && data.tunnels.length > 0) {
-      // Pega na primeira URL pública
-      res.json({ url: data.tunnels[0].public_url });
-    } else {
-      res.json({ url: null, message: 'Ngrok não encontrado' });
-    }
-  } catch (err) {
-    console.error('Erro ao obter ngrok URL:', err);
-    res.status(500).json({ url: null, error: 'Erro ao obter ngrok URL' });
-  }
-});

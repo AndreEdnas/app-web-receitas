@@ -1,8 +1,7 @@
-const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
 
 export async function getReceitas(apiUrl) {
   const res = await fetch(`${apiUrl}/receitas`, {
-    headers: NGROK_HEADERS,
+
   });
   if (!res.ok) {
     console.error("❌ Erro HTTP:", res.status, res.statusText);
@@ -17,7 +16,7 @@ export async function addReceita(apiUrl, receita) {
     method: "POST",
     headers: { 
       "Content-Type": "application/json",
-      ...NGROK_HEADERS,
+  
     },
     body: JSON.stringify(receita),
   });
@@ -27,7 +26,7 @@ export async function addReceita(apiUrl, receita) {
 export async function deleteReceita(apiUrl, id) {
   const res = await fetch(`${apiUrl}/receitas/${id}`, { 
     method: "DELETE",
-    headers: NGROK_HEADERS,
+   
   });
   return await res.json();
 }
@@ -37,7 +36,7 @@ export async function updateReceita(apiUrl, id, receita) {
     method: "PUT",
     headers: { 
       "Content-Type": "application/json",
-      ...NGROK_HEADERS,
+    
     },
     body: JSON.stringify(receita),
   });

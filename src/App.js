@@ -1,45 +1,51 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+// App.js
+import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+import LojaSelectPage from "./pages/LojaSelectPage";
+import MenuPrincipal from "./pages/MenuPrincipal";
+
 import ReceitasPage from "./pages/ReceitasPage";
 import ProducaoPage from "./pages/ProduzirReceitaPage";
 import CalculoPage from "./pages/CalculoPage";
-import AbatesPage from "./pages/AbatesPage"; // 👈 importa a nova página
-import 'bootstrap/dist/css/bootstrap.min.css';
+import AbatesPage from "./pages/AbatesPage";
 
 function App() {
+  const [loja, setLoja] = useState(localStorage.getItem("loja"));
+  const [apiUrl, setApiUrl] = useState(localStorage.getItem("apiUrl"));
+
+  if (!loja || !apiUrl) {
+    return (
+      <LojaSelectPage
+        onLoginSucesso={(loja, apiURL) => {
+          localStorage.setItem("loja", loja);
+          localStorage.setItem("apiUrl", apiURL);
+          setLoja(loja);
+          setApiUrl(apiURL);
+        }}
+      />
+    );
+  }
+
   return (
     <Router>
-      <div style={styles.container}>
-        <h1 style={styles.titulo}>🍴 Gestão de Produtos & Receitas</h1>
+      <MenuPrincipal
+        loja={loja}
+        onLogout={() => {
+          localStorage.clear();
+          setLoja(null);
+          setApiUrl(null);
+        }}
+      />
 
-        <nav style={styles.nav}>
-          <Link style={styles.link} to="/calculo">Cálculo</Link>
-          <Link style={styles.link} to="/receitas">Receitas</Link>
-          <Link style={styles.link} to="/producao">Produção de Receitas</Link>
-          <Link style={styles.link} to="/abates">Histórico</Link> {/* 👈 novo link */}
-        </nav>
-
-        <Routes>
-          <Route path="/calculo" element={<CalculoPage />} />
-          <Route path="/receitas" element={<ReceitasPage />} />
-          <Route path="/producao" element={<ProducaoPage />} />
-          <Route path="/abates" element={<AbatesPage />} /> {/* 👈 nova rota */}
-          <Route path="/" element={<Home />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/calculo" element={<CalculoPage apiUrl={apiUrl} />} />
+        <Route path="/receitas" element={<ReceitasPage apiUrl={apiUrl} />} />
+        <Route path="/producao" element={<ProducaoPage apiUrl={apiUrl} />} />
+        <Route path="/abates" element={<AbatesPage apiUrl={apiUrl} />} />
+      </Routes>
     </Router>
   );
 }
-
-function Home() {
-  return <h2>Bem-vindo! Escolhe uma opção acima 👆</h2>;
-}
-
-const styles = {
-  container: { textAlign: "center", marginTop: "40px", fontFamily: "Arial, sans-serif" },
-  titulo: { fontSize: "28px", marginBottom: "20px" },
-  nav: { display: "flex", justifyContent: "center", gap: "20px", marginBottom: "30px" },
-  link: { textDecoration: "none", padding: "10px 20px", background: "#007bff", color: "white", borderRadius: "6px" },
-};
 
 export default App;

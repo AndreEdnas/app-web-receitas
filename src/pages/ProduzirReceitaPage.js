@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { getReceitas } from "../services/receitasService";
 import { getProdutos, updateProduto, getVendasByDate, saveAbate } from "../services/produtosService";
-import { useNgrokUrl } from "../hooks/useNgrokUrl";
 
 export default function ProduzirReceitaPage() {
-  const apiUrl = useNgrokUrl("Mimos");
+  const apiUrl = localStorage.getItem("apiUrl");
   const [receitas, setReceitas] = useState([]);
   const [produtos, setProdutos] = useState([]);
   const [receitaSelecionada, setReceitaSelecionada] = useState(null);

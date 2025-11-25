@@ -1,10 +1,9 @@
 // produtosService.js
-const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
 
 export async function getProdutos(apiUrl) {
   try {
     const response = await fetch(`${apiUrl}/produtos`, {
-      headers: NGROK_HEADERS,
+     
     });
     if (!response.ok) throw new Error("Erro ao carregar produtos");
     return await response.json();
@@ -20,7 +19,6 @@ export async function updateProduto(apiUrl, id, data) {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true",
       },
       body: JSON.stringify(data),
     });
@@ -37,7 +35,6 @@ export async function updateProduto(apiUrl, id, data) {
 export async function getVendasByDate(apiUrl, data) {
   try {
     const response = await fetch(`${apiUrl}/vendas/${data}`, {
-      headers: { "ngrok-skip-browser-warning": "true" },
     });
     if (!response.ok) throw new Error("Erro ao carregar vendas");
     return await response.json();
@@ -55,7 +52,6 @@ export async function saveAbate(apiUrl, abate) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true",
       },
       body: JSON.stringify(abate),
     });
@@ -69,7 +65,6 @@ export async function saveAbate(apiUrl, abate) {
 export async function getAbates(apiUrl) {
   try {
     const response = await fetch(`${apiUrl}/abates`, {
-      headers: { "ngrok-skip-browser-warning": "true" },
     });
     if (!response.ok) throw new Error("Erro ao carregar abates");
     return await response.json();

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { getAbates } from "../services/produtosService";
-import { useNgrokUrl } from "../hooks/useNgrokUrl";
 
 export default function AbatesPage() {
-  const apiUrl = useNgrokUrl("Mimos");
+  const apiUrl = localStorage.getItem("apiUrl");
   const [abates, setAbates] = useState({});
   const [semanaSelecionada, setSemanaSelecionada] = useState("");
 

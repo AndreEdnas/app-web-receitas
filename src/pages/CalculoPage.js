@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { getReceitas } from "../services/receitasService";
 import { getProdutos } from "../services/produtosService";
-import { useNgrokUrl } from "../hooks/useNgrokUrl";
 
 export default function CalculoPage() {
-  const apiUrl = useNgrokUrl("Mimos");
+  const apiUrl = localStorage.getItem("apiUrl");
   const [comparacoes, setComparacoes] = useState([]);
   const [filtro, setFiltro] = useState("todos"); // "todos" | "lucro" | "perda"
 

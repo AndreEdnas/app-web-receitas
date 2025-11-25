@@ -8,10 +8,9 @@ import {
   deleteReceita,
   updateReceita,
 } from "../services/receitasService";
-import { useNgrokUrl } from "../hooks/useNgrokUrl";
 
 export default function ReceitasPage() {
-  const apiUrl = useNgrokUrl("Mimos");
+  const apiUrl = localStorage.getItem("apiUrl");
   const [receitas, setReceitas] = useState([]);
   const [receitaEditando, setReceitaEditando] = useState(null);
   const [alerta, setAlerta] = useState({ mensagem: "", tipo: "success" });
