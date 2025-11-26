@@ -37,7 +37,10 @@ export default function ProduzirReceitaPage() {
       const dataExtraida = matchData ? matchData[1] : null;
       setDataTalao(dataExtraida);
 
-      const linhas = text.split("\n").map((l) => l.trim()).filter(Boolean);
+      const linhas = text
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
 
       const produtosAtualizados = await getProdutos(apiUrl);
       let lista = [];
@@ -99,7 +102,9 @@ export default function ProduzirReceitaPage() {
       if (dataExtraida) {
         const vendas = await getVendasByDate(apiUrl, dataExtraida);
         for (const venda of vendas) {
-          const produto = produtosAtualizados.find((p) => p.descricao === venda.descricao);
+          const produto = produtosAtualizados.find(
+            (p) => p.descricao === venda.descricao
+          );
           if (!produto) {
             console.warn("❌ Produto da venda não encontrado:", venda.descricao);
             continue;
@@ -157,6 +162,7 @@ export default function ProduzirReceitaPage() {
       { tipo: "receita", nome: receita.nome, qtd: quantidade, produtos: produtosReceita },
     ]);
     setResultado(null);
+    setDataTalao(null);
   };
 
   // ✅ Confirmar abates
@@ -187,218 +193,338 @@ export default function ProduzirReceitaPage() {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 text-primary">⚙️ Produzir Receitas / Produtos</h2>
+      {/* HEADER */}
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+          <h2 className="text-primary fw-bold mb-1">⚙️ Produção / Abate de Stock</h2>
+          <small className="text-muted">
+            Gere abates a partir de receitas ou talões TXT, com pré-visualização antes de gravar.
+          </small>
+        </div>
 
-      {/* Seletor modo */}
-      <div className="btn-group mb-4">
-        <button
-          className={`btn ${modo === "manual" ? "btn-primary" : "btn-outline-primary"}`}
-          onClick={() => {
-            setModo("manual");
-            setPendentes([]);
-            setResultado(null);
-            setDataTalao(null);
-          }}
-        >
-          📝 Manual
-        </button>
-        <button
-          className={`btn ${modo === "ficheiro" ? "btn-primary" : "btn-outline-primary"}`}
-          onClick={() => {
-            setModo("ficheiro");
-            setPendentes([]);
-            setResultado(null);
-            setDataTalao(null);
-          }}
-        >
-          📄 Ficheiro TXT
-        </button>
+        {/* Seletor modo */}
+        <div className="btn-group mt-3 mt-md-0 shadow-sm">
+          <button
+            className={`btn ${
+              modo === "manual" ? "btn-primary" : "btn-outline-primary"
+            }`}
+            onClick={() => {
+              setModo("manual");
+              setPendentes([]);
+              setResultado(null);
+              setDataTalao(null);
+            }}
+          >
+            📝 Modo Manual
+          </button>
+          <button
+            className={`btn ${
+              modo === "ficheiro" ? "btn-primary" : "btn-outline-primary"
+            }`}
+            onClick={() => {
+              setModo("ficheiro");
+              setPendentes([]);
+              setResultado(null);
+              setDataTalao(null);
+            }}
+          >
+            📄 Talão TXT
+          </button>
+        </div>
       </div>
 
-      {/* --- MODO MANUAL --- */}
-      {modo === "manual" && (
-        <div className="card shadow-sm mb-4">
-          <div className="card-body">
-            <div className="mb-3">
-              <label className="form-label">Receita</label>
-              <select
-                className="form-select"
-                value={receitaSelecionada || ""}
-                onChange={(e) => {
-                  setReceitaSelecionada(e.target.value);
-                  setPendentes([]);
-                  setResultado(null);
-                }}
-              >
-                <option value="">-- Escolhe uma receita --</option>
-                {receitas.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.nome}
-                  </option>
-                ))}
-              </select>
+      <div className="row">
+        {/* COLUNA ESQUERDA: FORM / FICHEIRO */}
+        <div className="col-lg-4 mb-4">
+          {modo === "manual" && (
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-header bg-light">
+                <h5 className="mb-0 fw-bold text-secondary">
+                  📝 Produção Manual
+                </h5>
+              </div>
+              <div className="card-body">
+                <div className="mb-3">
+                  <label className="form-label">Receita</label>
+                  <select
+                    className="form-select"
+                    value={receitaSelecionada || ""}
+                    onChange={(e) => {
+                      setReceitaSelecionada(e.target.value);
+                      setPendentes([]);
+                      setResultado(null);
+                      setDataTalao(null);
+                    }}
+                  >
+                    <option value="">-- Escolhe uma receita --</option>
+                    {receitas.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Quantidade</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={quantidade}
+                    min="1"
+                    onChange={(e) => setQuantidade(Number(e.target.value))}
+                  />
+                </div>
+
+                <button
+                  className="btn btn-warning w-100"
+                  onClick={handlePreviewReceita}
+                >
+                  👀 Gerar Preview
+                </button>
+              </div>
             </div>
+          )}
 
-            <div className="mb-3">
-              <label className="form-label">Quantidade</label>
-              <input
-                type="number"
-                className="form-control"
-                value={quantidade}
-                min="1"
-                onChange={(e) => setQuantidade(Number(e.target.value))}
-              />
-            </div>
+          {modo === "ficheiro" && (
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-header bg-light">
+                <h5 className="mb-0 fw-bold text-secondary">
+                  📄 Importar Talão TXT
+                </h5>
+              </div>
+              <div className="card-body">
+                <p className="text-muted" style={{ fontSize: "0.9rem" }}>
+                  Carrega o ficheiro TXT exportado da caixa. O sistema vai:
+                  <br />• Ler produtos e receitas do talão
+                  <br />• Procurar vendas na BD pela mesma data
+                  <br />• Gerar um preview completo dos abates
+                </p>
+                <label className="form-label">Ficheiro TXT</label>
+                <input
+                  type="file"
+                  accept=".txt"
+                  className="form-control"
+                  onChange={handleFileUpload}
+                />
 
-            <button className="btn btn-warning" onClick={handlePreviewReceita}>
-              👀 Gerar Preview
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* --- MODO FICHEIRO --- */}
-      {modo === "ficheiro" && (
-        <div className="card shadow-sm mb-4">
-          <div className="card-body">
-            <label className="form-label">Carregar talão TXT</label>
-            <input type="file" accept=".txt" className="form-control" onChange={handleFileUpload} />
-          </div>
-        </div>
-      )}
-
-      {/* --- PREVIEW --- */}
-      {pendentes.length > 0 && (
-        <div className="card shadow-sm mt-4">
-          <div className="card-body">
-            <h5>📋 Abates pendentes (preview):</h5>
-
-            {dataTalao && (
-              <p className="fw-bold text-secondary">📅 Data do Talão: {dataTalao}</p>
-            )}
-
-            <div className="row">
-              {/* --- Coluna 1: Talão --- */}
-              <div className="col-md-6">
-                <h6 className="text-primary">📄 Talão</h6>
-
-                {/* Produtos diretos */}
-                {pendentes.some((p) => p.tipo === "produto") && (
-                  <table className="table table-sm table-bordered mb-4">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Produto</th>
-                        <th>Antes</th>
-                        <th>Abate</th>
-                        <th>Depois</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pendentes
-                        .filter((p) => p.tipo === "produto")
-                        .map((item, i) => (
-                          <tr key={`produto-${i}`}>
-                            <td>📦 {item.produto}</td>
-                            <td>{item.antes}</td>
-                            <td className="text-danger fw-bold">-{item.abate}</td>
-                            <td>{item.depois}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
+                {dataTalao && (
+                  <div className="alert alert-info mt-3 mb-0 py-2">
+                    <strong>Data do Talão:</strong> {dataTalao}
+                  </div>
                 )}
+              </div>
+            </div>
+          )}
+        </div>
 
-                {/* Receitas */}
-                <div className="accordion" id="accordionPreview">
-                  {pendentes
-                    .filter((p) => p.tipo === "receita")
-                    .map((item, i) => (
-                      <div className="accordion-item" key={`receita-${i}`}>
-                        <h2 className="accordion-header" id={`heading${i}`}>
-                          <button
-                            className="accordion-button collapsed fw-bold text-primary"
-                            style={{ backgroundColor: "#e7f1ff" }}
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target={`#collapse${i}`}
-                          >
-                            🍽 Receita: {item.nome} ({item.qtd}x)
-                          </button>
-                        </h2>
-                        <div
-                          id={`collapse${i}`}
-                          className="accordion-collapse collapse"
-                          data-bs-parent="#accordionPreview"
-                        >
-                          <div className="accordion-body">
-                            <table className="table table-sm">
-                              <thead>
-                                <tr>
-                                  <th>Produto</th>
-                                  <th>Antes</th>
-                                  <th>Abate</th>
-                                  <th>Depois</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {item.produtos.map((p, j) => (
-                                  <tr key={j}>
-                                    <td>{p.produto}</td>
-                                    <td>{p.antes}</td>
-                                    <td className="text-danger">-{p.abate}</td>
-                                    <td>{p.depois}</td>
+        {/* COLUNA DIREITA: PREVIEW / RESULTADOS */}
+        <div className="col-lg-8 mb-4">
+          {/* PREVIEW */}
+          {pendentes.length > 0 && (
+            <div className="card shadow-sm border-0 mb-4">
+              <div className="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 className="mb-0 fw-bold text-secondary">
+                  📋 Abates pendentes (Preview)
+                </h5>
+                {dataTalao && (
+                  <span className="badge text-bg-secondary">
+                    📅 Talão: {dataTalao}
+                  </span>
+                )}
+              </div>
+              <div className="card-body">
+                <div className="row">
+                  {/* --- Coluna 1: Talão / Receitas --- */}
+                  <div className="col-md-6 mb-3">
+                    <h6 className="text-primary fw-bold mb-2">
+                      📄 Talão & Receitas
+                    </h6>
+
+                    {/* Produtos diretos */}
+                    {pendentes.some((p) => p.tipo === "produto") && (
+                      <div className="mb-3">
+                        <h6 className="fw-bold" style={{ fontSize: "0.9rem" }}>
+                          📦 Produtos diretos
+                        </h6>
+                        <div className="table-responsive">
+                          <table className="table table-sm table-bordered mb-0 align-middle">
+                            <thead className="table-light">
+                              <tr>
+                                <th>Produto</th>
+                                <th className="text-end">Antes</th>
+                                <th className="text-end">Abate</th>
+                                <th className="text-end">Depois</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {pendentes
+                                .filter((p) => p.tipo === "produto")
+                                .map((item, i) => (
+                                  <tr key={`produto-${i}`}>
+                                    <td>{item.produto}</td>
+                                    <td className="text-end">{item.antes}</td>
+                                    <td className="text-end text-danger fw-bold">
+                                      -{item.abate}
+                                    </td>
+                                    <td className="text-end">{item.depois}</td>
                                   </tr>
                                 ))}
-                              </tbody>
-                            </table>
-                          </div>
+                            </tbody>
+                          </table>
                         </div>
                       </div>
-                    ))}
+                    )}
+
+                    {/* Receitas */}
+                    <div className="accordion" id="accordionPreview">
+                      {pendentes
+                        .filter((p) => p.tipo === "receita")
+                        .map((item, i) => (
+                          <div className="accordion-item" key={`receita-${i}`}>
+                            <h2 className="accordion-header" id={`heading${i}`}>
+                              <button
+                                className="accordion-button collapsed fw-bold text-primary"
+                                style={{ backgroundColor: "#e7f1ff" }}
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target={`#collapse${i}`}
+                              >
+                                🍽 Receita: {item.nome} ({item.qtd}x)
+                              </button>
+                            </h2>
+                            <div
+                              id={`collapse${i}`}
+                              className="accordion-collapse collapse"
+                              data-bs-parent="#accordionPreview"
+                            >
+                              <div className="accordion-body p-2">
+                                <div className="table-responsive">
+                                  <table className="table table-sm mb-0 align-middle">
+                                    <thead>
+                                      <tr>
+                                        <th>Produto</th>
+                                        <th className="text-end">Antes</th>
+                                        <th className="text-end">Abate</th>
+                                        <th className="text-end">Depois</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {item.produtos.map((p, j) => (
+                                        <tr key={j}>
+                                          <td>{p.produto}</td>
+                                          <td className="text-end">
+                                            {p.antes}
+                                          </td>
+                                          <td className="text-end text-danger">
+                                            -{p.abate}
+                                          </td>
+                                          <td className="text-end">
+                                            {p.depois}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* --- Coluna 2: Vendas BD --- */}
+                  <div className="col-md-6 mb-3">
+                    <h6 className="text-success fw-bold mb-2">
+                      🛒 Vendas na BD
+                    </h6>
+
+                    {pendentes.some((p) => p.tipo === "venda") ? (
+                      <div className="table-responsive">
+                        <table className="table table-sm table-bordered align-middle mb-0">
+                          <thead className="table-light">
+                            <tr>
+                              <th>Produto</th>
+                              <th className="text-end">Antes</th>
+                              <th className="text-end">Abate</th>
+                              <th className="text-end">Depois</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {pendentes
+                              .filter((p) => p.tipo === "venda")
+                              .map((item, i) => (
+                                <tr key={`venda-${i}`}>
+                                  <td>{item.produto}</td>
+                                  <td className="text-end">{item.antes}</td>
+                                  <td className="text-end text-danger fw-bold">
+                                    -{item.abate}
+                                  </td>
+                                  <td className="text-end">{item.depois}</td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-muted mb-0">
+                        Nenhuma venda encontrada na BD para esta data.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="d-flex flex-wrap gap-2 mt-3 justify-content-end">
+                  <button
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => {
+                      setPendentes([]);
+                      setResultado(null);
+                      setDataTalao(null);
+                    }}
+                    type="button"
+                  >
+                    ❌ Limpar Preview
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    onClick={handleConfirmar}
+                  >
+                    ✅ Confirmar Abate
+                  </button>
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* --- Coluna 2: Vendas BD --- */}
-              <div className="col-md-6">
-                <h6 className="text-success">🛒 Vendas na BD</h6>
-
-                {pendentes.some((p) => p.tipo === "venda") ? (
-                  <table className="table table-sm table-bordered">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Produto</th>
-                        <th>Antes</th>
-                        <th>Abate</th>
-                        <th>Depois</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pendentes
-                        .filter((p) => p.tipo === "venda")
-                        .map((item, i) => (
-                          <tr key={`venda-${i}`}>
-                            <td>{item.produto}</td>
-                            <td>{item.antes}</td>
-                            <td className="text-danger fw-bold">-{item.abate}</td>
-                            <td>{item.depois}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <p className="text-muted">
-                    Nenhuma venda encontrada na BD para esta data.
-                  </p>
-                )}
+          {/* RESULTADO FINAL (opcional – mesma lógica, só visual) */}
+          {resultado && Array.isArray(resultado) && resultado.length > 0 && (
+            <div className="card shadow-sm border-0">
+              <div className="card-header bg-success text-white">
+                <h6 className="mb-0 fw-bold">✅ Abates aplicados</h6>
+              </div>
+              <div className="card-body">
+                <p className="mb-2 text-muted">
+                  Os seguintes abates foram gravados no histórico e o stock foi
+                  atualizado.
+                </p>
+                <ul className="mb-0">
+                  {resultado.map((item, idx) => (
+                    <li key={idx} style={{ fontSize: "0.9rem" }}>
+                      {item.tipo === "receita"
+                        ? `Receita "${item.nome}" (${item.qtd}x)`
+                        : `${item.tipo === "venda" ? "Venda" : "Produto"} - ${
+                            item.produto
+                          }`}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
-
-            <button className="btn btn-danger mt-3" onClick={handleConfirmar}>
-              ✅ Confirmar Abate
-            </button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

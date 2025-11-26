@@ -1,27 +1,36 @@
+// ReceitaForm.js
 import React, { useState, useEffect, useRef } from "react";
 import { getProdutos } from "../services/produtosService";
 
-export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando, limparEdicao }) {
+export function ReceitaForm({
+  apiUrl,
+  onAdicionar,
+  onAtualizar,
+  receitaEditando,
+  limparEdicao,
+}) {
   const [nome, setNome] = useState("");
-  const [ingredientes, setIngredientes] = useState([{ produto: "", quantidade: "", unidade: "", preco: 0 }]);
+  const [ingredientes, setIngredientes] = useState([
+    { id: null, produto: "", quantidade: "", unidade: "", preco: 0 },
+  ]);
   const [produtos, setProdutos] = useState([]);
 
-  // mensagens
   const [msg, setMsg] = useState("");
-  const [msgTipo, setMsgTipo] = useState("success"); // success | warning | danger
+  const [msgTipo, setMsgTipo] = useState("success");
 
-  // --- autocomplete Nome da Receita ---
   const [nomeOpen, setNomeOpen] = useState(false);
   const [nomeHl, setNomeHl] = useState(-1);
-  const [produtoSelecionadoParaReceita, setProdutoSelecionadoParaReceita] = useState(null);
+  const [produtoSelecionadoParaReceita, setProdutoSelecionadoParaReceita] =
+    useState(null);
   const nomeDropdownRef = useRef(null);
 
-  // --- autocomplete Ingredientes ---
   const [openIdx, setOpenIdx] = useState(null);
   const [highlightIdx, setHighlightIdx] = useState(-1);
   const dropdownRefs = useRef({});
 
-  // carregar produtos da BD
+  // =======================
+  // CARREGAR PRODUTOS
+  // =======================
   useEffect(() => {
     if (!apiUrl) return;
     (async () => {
@@ -35,60 +44,95 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
     })();
   }, [apiUrl]);
 
-  // atualizar o form quando entrar em edição (já com preços da BD)
-  // atualizar o form quando entrar em edição (já com preços atuais da BD)
+  // =======================
+  // EDITAR RECEITA — preencher dados
+  // =======================
   useEffect(() => {
-    if (!receitaEditando) return;
-    if (!produtos.length) return; // espera até produtos estarem carregados
+    if (!receitaEditando || !produtos.length) return;
 
     setNome(receitaEditando.nome);
 
-    const ingredientesAtualizados = (receitaEditando.ingredientes || []).map((ing) => {
-      const prod = produtos.find(
-        (p) => (p.descricao || "").toLowerCase() === (ing.produto || "").toLowerCase()
-      );
+    const ingredientesAtualizados = (receitaEditando.ingredientes || []).map(
+      (ing) => {
+        const prod = produtos.find(
+          (p) =>
+            (p.descricao || "").toLowerCase() ===
+            (ing.produto || "").toLowerCase()
+        );
 
-      const quantidade = parseFloat(ing.quantidade) || 0;
-      const precoAtual = prod ? Number(prod.precocompra) || 0 : Number(ing.preco) || 0;
-      const unidadeAtual = prod?.unidade?.descricao || ing.unidade || "";
+        const quantidade = parseFloat(ing.quantidade) || 0;
+        const precoAtual = prod
+          ? Number(prod.precocompra) || 0
+          : Number(ing.preco) || 0;
+        const unidadeAtual = prod?.unidade?.descricao || ing.unidade || "";
 
-      return {
-        ...ing,
-        unidade: unidadeAtual,
-        preco: precoAtual,
-        subtotal: precoAtual * quantidade,
-      };
-    });
+        return {
+          ...ing,
+          unidade: unidadeAtual,
+          preco: precoAtual,
+          subtotal: precoAtual * quantidade,
+        };
+      }
+    );
 
     setIngredientes(ingredientesAtualizados);
   }, [receitaEditando, produtos]);
 
+  // =======================
+  // RESET DO FORMULÁRIO QUANDO CANCELAR
+  // =======================
+  useEffect(() => {
+    if (!receitaEditando) {
+      setNome("");
+      setProdutoSelecionadoParaReceita(null);
+      setIngredientes([
+        { id: null, produto: "", quantidade: "", unidade: "", preco: 0 },
+      ]);
+    }
+  }, [receitaEditando]);
 
-
+  // =======================
+  // Dropdown do NOME
+  // =======================
   useEffect(() => {
     if (!nome || !produtos.length) return;
-    const prod = produtos.find(p => (p.descricao || "").toLowerCase() === nome.toLowerCase());
+    const prod = produtos.find(
+      (p) => (p.descricao || "").toLowerCase() === nome.toLowerCase()
+    );
     setProdutoSelecionadoParaReceita(prod || null);
   }, [nome, produtos]);
 
-  // fechar dropdowns ao clicar fora
+  // Fechar dropdowns ao clicar fora
   useEffect(() => {
     function onClickOutside(e) {
-      if (nomeOpen && nomeDropdownRef.current && !nomeDropdownRef.current.contains(e.target)) {
-        setNomeOpen(false); setNomeHl(-1);
+      if (
+        nomeOpen &&
+        nomeDropdownRef.current &&
+        !nomeDropdownRef.current.contains(e.target)
+      ) {
+        setNomeOpen(false);
+        setNomeHl(-1);
       }
-      if (openIdx !== null && dropdownRefs.current[openIdx] && !dropdownRefs.current[openIdx].contains(e.target)) {
-        setOpenIdx(null); setHighlightIdx(-1);
+      if (
+        openIdx !== null &&
+        dropdownRefs.current[openIdx] &&
+        !dropdownRefs.current[openIdx].contains(e.target)
+      ) {
+        setOpenIdx(null);
+        setHighlightIdx(-1);
       }
     }
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [nomeOpen, openIdx]);
 
+  // Filtrar produtos pelo texto
   const filtrar = (texto) => {
     const t = (texto || "").trim().toLowerCase();
     if (t.length < 2) return [];
-    return produtos.filter(p => (p.descricao || "").toLowerCase().includes(t)).slice(0, 50);
+    return produtos
+      .filter((p) => (p.descricao || "").toLowerCase().includes(t))
+      .slice(0, 50);
   };
 
   const sugestoesNome = filtrar(nome);
@@ -103,16 +147,33 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
   const onKeyDownNome = (e) => {
     const items = sugestoesNome;
     if (!items.length) return;
-    if (e.key === "ArrowDown") { e.preventDefault(); setNomeHl((prev) => (prev + 1) % items.length); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setNomeHl((prev) => (prev - 1 + items.length) % items.length); }
-    else if (e.key === "Enter") {
-      if (nomeHl >= 0 && nomeHl < items.length) { e.preventDefault(); escolherNomeProduto(items[nomeHl]); }
-    } else if (e.key === "Escape") { setNomeOpen(false); setNomeHl(-1); }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setNomeHl((prev) => (prev + 1) % items.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setNomeHl((prev) => (prev - 1 + items.length) % items.length);
+    } else if (e.key === "Enter") {
+      if (nomeHl >= 0 && nomeHl < items.length) {
+        e.preventDefault();
+        escolherNomeProduto(items[nomeHl]);
+      }
+    } else if (e.key === "Escape") {
+      setNomeOpen(false);
+      setNomeHl(-1);
+    }
   };
 
+  // =======================
+  // INGREDIENTES
+  // =======================
   const removerIngrediente = (index) => {
     const novos = ingredientes.filter((_, i) => i !== index);
-    setIngredientes(novos);
+    setIngredientes(
+      novos.length
+        ? novos
+        : [{ id: null, produto: "", quantidade: "", unidade: "", preco: 0 }]
+    );
   };
 
   const handleIngredienteChange = (index, field, value) => {
@@ -121,30 +182,37 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
 
     if (field === "produto") {
       const lower = value.toLowerCase();
-      const produtoSelecionado = produtos.find(p => (p.descricao || "").toLowerCase() === lower) || null;
+      const produtoSelecionado =
+        produtos.find(
+          (p) => (p.descricao || "").toLowerCase() === lower
+        ) || null;
+
       novos[index].unidade = produtoSelecionado?.unidade?.descricao || "";
       const preco = produtoSelecionado?.precocompra;
-      novos[index].preco = preco !== undefined && preco !== null ? Number(preco) : 0;
+      novos[index].preco =
+        preco !== undefined && preco !== null ? Number(preco) : 0;
     }
 
     setIngredientes(novos);
   };
 
   const escolherProdutoIngrediente = (rowIdx, produtoObj) => {
-  const novos = [...ingredientes];
-  novos[rowIdx] = {
-    ...novos[rowIdx],
-    id: produtoObj.codigo, // 👈 guarda o código do produto da BD
-    produto: produtoObj.descricao,
-    unidade: produtoObj?.unidade?.descricao || "",
-    preco: produtoObj?.precocompra !== undefined && produtoObj?.precocompra !== null
-      ? Number(produtoObj.precocompra)
-      : 0
+    const novos = [...ingredientes];
+    novos[rowIdx] = {
+      ...novos[rowIdx],
+      id: produtoObj.codigo,
+      produto: produtoObj.descricao,
+      unidade: produtoObj?.unidade?.descricao || "",
+      preco:
+        produtoObj?.precocompra !== undefined &&
+          produtoObj?.precocompra !== null
+          ? Number(produtoObj.precocompra)
+          : 0,
+    };
+    setIngredientes(novos);
+    setOpenIdx(null);
+    setHighlightIdx(-1);
   };
-  setIngredientes(novos);
-  setOpenIdx(null);
-  setHighlightIdx(-1);
-};
 
   const calcularTotal = () => {
     return ingredientes.reduce((total, ing) => {
@@ -160,64 +228,153 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
     setTimeout(() => setMsg(""), 4000);
   };
 
+  // =======================
+  // VALIDAR FORMULÁRIO
+  // =======================
   const validar = () => {
-    // nome obrigatório e tem de ser produto válido (para obter codigo)
-    const prodReceita = produtoSelecionadoParaReceita
-      || produtos.find(p => (p.descricao || "").toLowerCase() === (nome || "").toLowerCase());
-    if (!nome.trim()) { mostrarMsg("Preencha o Nome da Receita.", "warning"); return null; }
-    if (!prodReceita) { mostrarMsg("Selecione um produto válido para o Nome da Receita (use a lista).", "warning"); return null; }
+    const prodReceita =
+      produtoSelecionadoParaReceita ||
+      produtos.find(
+        (p) =>
+          (p.descricao || "").toLowerCase() === (nome || "").toLowerCase()
+      );
 
-    if (!ingredientes.length) { mostrarMsg("Adicione pelo menos um ingrediente.", "warning"); return null; }
+    if (!nome.trim()) {
+      mostrarMsg("Preencha o Nome da Receita.", "warning");
+      return null;
+    }
+    if (!prodReceita) {
+      mostrarMsg(
+        "Selecione um produto válido para o Nome da Receita (use a lista).",
+        "warning"
+      );
+      return null;
+    }
 
-    // cada ingrediente: produto, quantidade > 0, unidade e preço (unidade/preço são auto, mas validamos)
+    if (!ingredientes.length) {
+      mostrarMsg("Adicione pelo menos um ingrediente.", "warning");
+      return null;
+    }
+
     for (let i = 0; i < ingredientes.length; i++) {
       const ing = ingredientes[i];
       if (!ing.produto || !ing.produto.trim()) {
-        mostrarMsg(`Preencha o produto do ingrediente #${i + 1}.`, "warning"); return null;
+        mostrarMsg(
+          `Preencha o produto do ingrediente #${i + 1}.`,
+          "warning"
+        );
+        return null;
       }
-      const prod = produtos.find(p => (p.descricao || "").toLowerCase() === (ing.produto || "").toLowerCase());
-      if (!prod) { mostrarMsg(`Selecione um produto válido no ingrediente #${i + 1}.`, "warning"); return null; }
+      const prod = produtos.find(
+        (p) =>
+          (p.descricao || "").toLowerCase() ===
+          (ing.produto || "").toLowerCase()
+      );
+      if (!prod) {
+        mostrarMsg(
+          `Selecione um produto válido no ingrediente #${i + 1}.`,
+          "warning"
+        );
+        return null;
+      }
       const qtd = parseFloat(ing.quantidade);
-      if (!(qtd > 0)) { mostrarMsg(`Quantidade inválida no ingrediente #${i + 1}.`, "warning"); return null; }
+      if (!(qtd > 0)) {
+        mostrarMsg(
+          `Quantidade inválida no ingrediente #${i + 1}.`,
+          "warning"
+        );
+        return null;
+      }
       const un = ing.unidade || prod?.unidade?.descricao || "";
       const pr = Number(ing.preco ?? prod?.precocompra ?? 0);
-      if (!un) { mostrarMsg(`Unidade em falta no ingrediente #${i + 1}.`, "warning"); return null; }
-      if (!(pr > 0)) { mostrarMsg(`Preço inválido no ingrediente #${i + 1}.`, "warning"); return null; }
+      if (!un) {
+        mostrarMsg(
+          `Unidade em falta no ingrediente #${i + 1}.`,
+          "warning"
+        );
+        return null;
+      }
+      if (!(pr > 0)) {
+        mostrarMsg(
+          `Preço inválido no ingrediente #${i + 1}.`,
+          "warning"
+        );
+        return null;
+      }
     }
 
-    return prodReceita; // válido
+    return prodReceita;
   };
 
+  // =======================
+  // SUBMETER FORM
+  // =======================
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const prodReceita = validar();
     if (!prodReceita) return;
 
+    // ===============================
+    // BLOQUEAR RECEITAS DUPLICADAS
+    // ===============================
+
+    const todasReceitas = JSON.parse(localStorage.getItem("todasReceitas") || "[]");
+
+    // Normalizar nome
+    const nomeLower = nome.trim().toLowerCase();
+
+    // 1️⃣ Verificar nome duplicado (exceto quando estamos a editar a mesma)
+    const nomeDuplicado = todasReceitas.some(
+      (r) =>
+        r.id !== (receitaEditando?.id || null) &&
+        (r.nome || "").trim().toLowerCase() === nomeLower
+    );
+
+    if (nomeDuplicado) {
+      mostrarMsg("❌ Já existe uma receita com este nome!", "danger");
+      return;
+    }
+
+    // 2️⃣ Verificar ID (produto principal da receita) duplicado
+    const idDuplicado = todasReceitas.some(
+      (r) =>
+        r.id !== (receitaEditando?.id || null) &&
+        r.id === prodReceita.codigo
+    );
+
+    if (idDuplicado) {
+      mostrarMsg("❌ Já existe uma receita associada a este produto!", "danger");
+      return;
+    }
+
+
     const ingredientesComUnidade = ingredientes.map((ing) => {
-  const prod = produtos.find(
-    (p) => (p.descricao || "").toLowerCase() === (ing.produto || "").toLowerCase()
-  );
+      const prod = produtos.find(
+        (p) =>
+          (p.descricao || "").toLowerCase() ===
+          (ing.produto || "").toLowerCase()
+      );
 
-  const quantidade = parseFloat(ing.quantidade) || 0;
-  const precoAtual = prod ? Number(prod.precocompra) || 0 : Number(ing.preco) || 0;
-  const unidadeAtual = prod?.unidade?.descricao || ing.unidade || "";
+      const quantidade = parseFloat(ing.quantidade) || 0;
+      const precoAtual = prod
+        ? Number(prod.precocompra) || 0
+        : Number(ing.preco) || 0;
+      const unidadeAtual = prod?.unidade?.descricao || ing.unidade || "";
 
-  return {
-    id: prod?.codigo || ing.id, // 👈 garante que o id vem do produto
-    produto: ing.produto,
-    quantidade,
-    unidade: unidadeAtual,
-    preco: precoAtual,
-    subtotal: precoAtual * quantidade,
-  };
-});
-
-
+      return {
+        id: prod?.codigo || ing.id,
+        produto: ing.produto,
+        quantidade,
+        unidade: unidadeAtual,
+        preco: precoAtual,
+        subtotal: precoAtual * quantidade,
+      };
+    });
 
     const receitaFinal = {
-      id: prodReceita.codigo,           // id = codigo do produto
-      nome: prodReceita.descricao,      // nome alinhado com a descrição
+      id: prodReceita.codigo,
+      nome: prodReceita.descricao,
       ingredientes: ingredientesComUnidade,
       total: ingredientesComUnidade.reduce((acc, i) => acc + i.subtotal, 0),
     };
@@ -236,54 +393,87 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
       mostrarMsg("Receita adicionada com sucesso!", "success");
     }
 
-    // reset
+    // Reset final
     setNome("");
     setProdutoSelecionadoParaReceita(null);
-    setIngredientes([{ id: null, produto: "", quantidade: "", unidade: "", preco: 0 }]);
-
+    setIngredientes([
+      { id: null, produto: "", quantidade: "", unidade: "", preco: 0 },
+    ]);
   };
 
+  // =======================
+  // RENDER
+  // =======================
   return (
-    <form onSubmit={handleSubmit} className="p-4 mb-4 bg-light rounded shadow">
-      {/* ALERTA por cima do título */}
+    <form onSubmit={handleSubmit}>
+      {/* ALERTA */}
       {msg && (
         <div className={`alert alert-${msgTipo} mb-3`} role="alert">
           {msg}
         </div>
       )}
 
-      <h2 className="text-center text-primary mb-4">
-        {receitaEditando ? "✏️ Editar Receita" : "➕ Adicionar Nova Receita"}
-      </h2>
-
-      {/* NOME DA RECEITA (autocomplete) */}
-      <div className="mb-3" ref={nomeDropdownRef} style={{ position: "relative" }}>
+      {/* NOME DA RECEITA */}
+      <div
+        className="mb-3"
+        ref={nomeDropdownRef}
+        style={{ position: "relative" }}
+      >
+        <label className="form-label fw-bold">Nome da Receita</label>
         <input
           type="text"
           placeholder="Nome da Receita (selecione um produto)"
           value={nome}
-          onChange={(e) => { setNome(e.target.value); setProdutoSelecionadoParaReceita(null); setNomeOpen(true); setNomeHl(-1); }}
+          onChange={(e) => {
+            setNome(e.target.value);
+            setProdutoSelecionadoParaReceita(null);
+            setNomeOpen(true);
+            setNomeHl(-1);
+          }}
           onFocus={() => setNomeOpen(true)}
           onKeyDown={onKeyDownNome}
-          className="form-control form-control-lg"
+          className="form-control form-control-sm"
           autoComplete="off"
         />
+
+        {produtoSelecionadoParaReceita && (
+          <small className="text-muted">
+            Produto ligado: {produtoSelecionadoParaReceita.descricao} • Cód:{" "}
+            {produtoSelecionadoParaReceita.codigo}
+          </small>
+        )}
+
         {nomeOpen && sugestoesNome.length > 0 && (
-          <ul className="list-group position-absolute w-100"
-            style={{ zIndex: 1000, maxHeight: "220px", overflowY: "auto", top: "100%", left: 0 }}>
+          <ul
+            className="list-group position-absolute w-100"
+            style={{
+              zIndex: 1000,
+              maxHeight: "220px",
+              overflowY: "auto",
+              top: "100%",
+              left: 0,
+            }}
+          >
             {sugestoesNome.map((p, idx) => (
               <li
                 key={p.codigo ?? p.codbarras ?? `${p.descricao}-${idx}`}
-                className={`list-group-item list-group-item-action ${idx === nomeHl ? "active" : ""}`}
+                className={`list-group-item list-group-item-action ${idx === nomeHl ? "active" : ""
+                  }`}
                 onMouseEnter={() => setNomeHl(idx)}
-                onMouseDown={(e) => { e.preventDefault(); escolherNomeProduto(p); }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  escolherNomeProduto(p);
+                }}
                 style={{ cursor: "pointer" }}
                 title={p.descricao}
               >
                 <div className="d-flex justify-content-between">
                   <span>{p.descricao}</span>
                   <small>
-                    {p.unidade?.descricao ? `(${p.unidade.descricao})` : ""} {p.precocompra ? `• ${Number(p.precocompra).toFixed(2)} €` : ""}
+                    {p.unidade?.descricao ? `(${p.unidade.descricao})` : ""}{" "}
+                    {p.precocompra
+                      ? `• ${Number(p.precocompra).toFixed(2)} €`
+                      : ""}
                   </small>
                 </div>
               </li>
@@ -292,7 +482,8 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
         )}
       </div>
 
-      {/* INGREDIENTES (autocomplete por linha) */}
+      {/* INGREDIENTES */}
+      <label className="form-label fw-bold">Ingredientes</label>
       {ingredientes.map((ing, i) => {
         const sugestoes = filtrar(ing.produto);
         return (
@@ -303,6 +494,7 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
             style={{ position: "relative" }}
           >
             <div className="d-flex gap-2 align-items-center">
+              {/* Produto */}
               <div style={{ flex: 2 }}>
                 <input
                   type="text"
@@ -322,9 +514,14 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
                       setHighlightIdx((prev) => (prev + 1) % items.length);
                     } else if (e.key === "ArrowUp") {
                       e.preventDefault();
-                      setHighlightIdx((prev) => (prev - 1 + items.length) % items.length);
+                      setHighlightIdx(
+                        (prev) => (prev - 1 + items.length) % items.length
+                      );
                     } else if (e.key === "Enter") {
-                      if (highlightIdx >= 0 && highlightIdx < items.length) {
+                      if (
+                        highlightIdx >= 0 &&
+                        highlightIdx < items.length
+                      ) {
                         e.preventDefault();
                         escolherProdutoIngrediente(i, items[highlightIdx]);
                       }
@@ -333,9 +530,11 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
                       setHighlightIdx(-1);
                     }
                   }}
-                  className="form-control"
+                  className="form-control form-control-sm"
                   autoComplete="off"
                 />
+
+                {/* Dropdown de produtos */}
                 {openIdx === i && sugestoes.length > 0 && (
                   <ul
                     className="list-group position-absolute w-100"
@@ -377,6 +576,7 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
                 )}
               </div>
 
+              {/* Quantidade */}
               <input
                 type="number"
                 placeholder="Qtd"
@@ -384,18 +584,24 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
                 onChange={(e) =>
                   handleIngredienteChange(i, "quantidade", e.target.value)
                 }
-                className="form-control"
-                style={{ maxWidth: "100px" }}
+                className="form-control form-control-sm"
+                style={{ maxWidth: "90px" }}
                 min="0"
                 step="any"
                 required
               />
-              <span style={{ minWidth: 60 }}>{ing.unidade}</span>
-              <span style={{ minWidth: 90 }}>
+
+              {/* Unidade */}
+              <span style={{ minWidth: 60, fontSize: "0.85rem" }}>
+                {ing.unidade}
+              </span>
+
+              {/* Preço */}
+              <span style={{ minWidth: 90, fontSize: "0.85rem" }}>
                 {ing.preco ? `${Number(ing.preco).toFixed(2)} €` : ""}
               </span>
 
-              {/* Botão de apagar ingrediente */}
+              {/* Remover */}
               <button
                 type="button"
                 className="btn btn-sm btn-outline-danger"
@@ -408,20 +614,42 @@ export function ReceitaForm({ apiUrl, onAdicionar, onAtualizar, receitaEditando,
         );
       })}
 
-
       <div className="mt-3">
-        <strong>Valor Total da Receita: </strong> {calcularTotal().toFixed(2)} €
+        <strong>Valor Total da Receita: </strong>{" "}
+        {calcularTotal().toFixed(2)} €
       </div>
 
-      <div className="d-flex gap-2 mt-3">
-        <button type="button" className="btn btn-primary" onClick={() => setIngredientes([...ingredientes, { produto: "", quantidade: "", unidade: "", preco: 0 }])}>
+      {/* BOTÕES */}
+      <div className="d-flex flex-wrap gap-2 mt-3">
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          onClick={() =>
+            setIngredientes([
+              ...ingredientes,
+              {
+                id: null,
+                produto: "",
+                quantidade: "",
+                unidade: "",
+                preco: 0,
+              },
+            ])
+          }
+        >
           ➕ Ingrediente
         </button>
-        <button type="submit" className="btn btn-success">
+
+        <button type="submit" className="btn btn-success btn-sm">
           {receitaEditando ? "💾 Atualizar" : "💾 Guardar"}
         </button>
+
         {receitaEditando && (
-          <button type="button" className="btn btn-secondary" onClick={limparEdicao}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={limparEdicao}
+          >
             ❌ Cancelar
           </button>
         )}

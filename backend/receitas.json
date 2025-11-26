@@ -1,40 +1,25 @@
 [
   {
-    "id": 416,
-    "nome": "Crepe",
+    "id": 412,
+    "nome": "teste2",
     "ingredientes": [
       {
-        "id": 1,
-        "produto": "ABACAXI DELMONTE CAT.II (KG)",
-        "quantidade": 2,
-        "unidade": "Kg",
-        "preco": 2,
-        "subtotal": 4
+        "id": 412,
+        "produto": "teste2",
+        "quantidade": 1,
+        "unidade": "Unidade",
+        "preco": 0.5,
+        "subtotal": 0.5
       },
       {
-        "id": 2,
-        "produto": "BANANA EXTRA COSTA RICA (KG)",
-        "quantidade": 0.2,
-        "unidade": "Kg",
-        "preco": 1.5,
-        "subtotal": 0.30000000000000004
-      }
-    ],
-    "total": 4.3
-  },
-  {
-    "id": 1,
-    "nome": "ABACAXI DELMONTE CAT.II (KG)",
-    "ingredientes": [
-      {
-        "id": 1,
-        "produto": "ABACAXI DELMONTE CAT.II (KG)",
+        "id": 411,
+        "produto": "Teste",
         "quantidade": 1,
-        "unidade": "Kg",
-        "preco": 2,
-        "subtotal": 2
+        "unidade": "Unidade",
+        "preco": 1,
+        "subtotal": 1
       }
     ],
-    "total": 2
+    "total": 1.5
   }
 ]
