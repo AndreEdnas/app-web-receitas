@@ -27,9 +27,9 @@ async function getDbConfig() {
   return {
     user,
     password,
-   server: 'Andre',
+   server: 'ENCOMENDAS',
   database: 'DEMOZS',
-  port: 1982,
+  port: 1433,
     options: {
       encrypt: false,
       trustServerCertificate: true

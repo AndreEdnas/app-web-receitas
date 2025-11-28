@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import ConfirmModal from "./ConfirmacaoModal";
+import DiferencasModal from "./DiferencasModal";
 
-export default function ReceitaList({ receitas = [], onApagar, onEditar }) {
+export default function ReceitaList({ receitas = [], onApagar, onEditar, onAtualizarDireto }) {
   const [showModal, setShowModal] = useState(false);
   const [receitaParaApagar, setReceitaParaApagar] = useState(null);
+  const [modalDiff, setModalDiff] = useState(null);
 
   const abrirModal = (r) => {
     setReceitaParaApagar(r);
@@ -17,6 +19,7 @@ export default function ReceitaList({ receitas = [], onApagar, onEditar }) {
     setShowModal(false);
     setReceitaParaApagar(null);
   };
+
 
   if (!receitas.length) {
     return <p className="text-muted">Nenhuma receita para mostrar.</p>;
@@ -42,7 +45,18 @@ export default function ReceitaList({ receitas = [], onApagar, onEditar }) {
             {/* HEADER DA RECEITA */}
             <div className="card-header d-flex justify-content-between align-items-center bg-light">
               <div>
-                <h6 className="mb-0 fw-bold">{r.nome}</h6>
+                <h6 className="mb-0 fw-bold">
+                  {r.nome}
+                  {r.desatualizada && (
+                    <span className="badge bg-danger ms-2">
+                      ⚠️ Desatualizada
+                    </span>
+
+                  )}
+
+
+
+                </h6>
                 <small className="text-muted">
                   {r.ingredientes?.length || 0} ingrediente(s)
                 </small>
@@ -85,23 +99,52 @@ export default function ReceitaList({ receitas = [], onApagar, onEditar }) {
 
               {/* BOTÕES */}
               <div className="d-flex justify-content-end gap-2 mt-2">
-                <button
-                  className="btn btn-sm btn-warning"
-                  onClick={() => onEditar(r)}
-                >
-                  ✏️ Editar
-                </button>
+
+                {/* Se estiver ATUALIZADA → mostrar Editar */}
+                {!r.desatualizada && (
+                  <button
+                    className="btn btn-sm btn-warning"
+                    onClick={() => onEditar(r)}
+                  >
+                    ✏️ Editar
+                  </button>
+                )}
+
+                {/* Se estiver DESATUALIZADA → mostrar Ver */}
+                {r.desatualizada && (
+                  <button
+                    className="btn btn-sm btn-info"
+                    onClick={() => setModalDiff(r)}
+                  >
+                    👁️ Ver
+                  </button>
+                )}
+
+                {/* Apagar — aparece sempre */}
                 <button
                   className="btn btn-sm btn-danger"
                   onClick={() => abrirModal(r)}
                 >
-                  🗑 Apagar
+                  🗑️ Apagar
                 </button>
+
               </div>
+
             </div>
           </div>
         </div>
       ))}
+
+      {/* MODAL DE DIFERENÇAS */}
+      <DiferencasModal
+        show={!!modalDiff}
+        onClose={() => setModalDiff(null)}
+        receita={modalDiff}
+        onAtualizar={() => onAtualizarDireto(modalDiff)}
+      />
+
+
+
 
       <ConfirmModal
         show={showModal}

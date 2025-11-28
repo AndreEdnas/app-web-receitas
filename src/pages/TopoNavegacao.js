@@ -19,11 +19,13 @@ export default function TopoNavegacao({ loja, onLogout }) {
           position: "sticky",
           top: 0,
           zIndex: 1000,
+          overflowX: "hidden"
         }}
       >
-        <div className="container-fluid d-flex align-items-center justify-content-between">
+        <div className="container-fluid d-flex align-items-center justify-content-between flex-wrap" style={{ minWidth: 0, overflow: "hidden" }}>
 
-          {/* Menu button (mobile) */}
+
+          {/* Menu mobile */}
           <button
             className="btn btn-dark btn-sm d-md-none me-2"
             onClick={() => setOpen(!open)}
@@ -31,46 +33,43 @@ export default function TopoNavegacao({ loja, onLogout }) {
             ☰
           </button>
 
-          {/* LOGOTIPO / LOJA */}
-          <div className="d-flex align-items-center gap-2">
+          {/* LOJA */}
+          <div className="d-flex align-items-center gap-2 me-3" style={{ minWidth: 0 }}>
+
             <span style={{ fontSize: "20px" }}>🏪</span>
             <span className="fw-bold" style={{ fontSize: "18px" }}>
               {loja}
             </span>
           </div>
 
-          {/* LINKS (Desktop) */}
-          <div className="d-none d-md-flex align-items-center gap-4">
+          {/* Links */}
+          <div className="d-none d-md-flex align-items-center gap-3 flex-wrap" style={{ minWidth: 0 }}>
 
             <Link className={`nav-link text-dark ${isActive("/calculo")}`} to="/calculo">
               📊 Cálculo
             </Link>
-
             <Link className={`nav-link text-dark ${isActive("/receitas")}`} to="/receitas">
               📘 Receitas
             </Link>
-
             <Link className={`nav-link text-dark ${isActive("/producao")}`} to="/producao">
               ⚙️ Produção
             </Link>
-
             <Link className={`nav-link text-dark ${isActive("/historico")}`} to="/historico">
               📚 Histórico
             </Link>
-
             <Link className={`nav-link text-dark ${isActive("/calculadora-online")}`} to="/calculadora-online">
               🧮 Calculadora
             </Link>
-
           </div>
 
           {/* SAIR */}
-          <button className="btn btn-danger btn-sm" onClick={onLogout}>
+          <button className="btn btn-danger btn-sm" style={{ minWidth: 0 }} onClick={onLogout}>
             Sair
           </button>
 
         </div>
       </nav>
+
 
       {/* MOBILE MENU */}
       {open && (

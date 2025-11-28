@@ -1,25 +1,55 @@
 [
   {
-    "id": 412,
-    "nome": "teste2",
+    "id": 200001,
+    "nome": "Crepe",
     "ingredientes": [
       {
-        "id": 412,
-        "produto": "teste2",
+        "id": 200002,
+        "produto": "Ingrediente 1",
         "quantidade": 1,
-        "unidade": "Unidade",
-        "preco": 0.5,
-        "subtotal": 0.5
+        "unidade": "Gramas",
+        "preco": 1,
+        "subtotal": 1
       },
       {
-        "id": 411,
-        "produto": "Teste",
+        "id": 200003,
+        "produto": "Ingrediente 2",
         "quantidade": 1,
-        "unidade": "Unidade",
+        "unidade": "Gramas",
+        "preco": 2,
+        "subtotal": 2
+      }
+    ],
+    "total": 3
+  },
+  {
+    "id": 2,
+    "nome": "BANANA EXTRA COSTA RICA (KG)",
+    "ingredientes": [
+      {
+        "id": 200002,
+        "produto": "Ingrediente 1",
+        "quantidade": 1,
+        "unidade": "Gramas",
         "preco": 1,
         "subtotal": 1
       }
     ],
-    "total": 1.5
+    "total": 1
+  },
+  {
+    "id": 13,
+    "nome": "MAÇÃ REINETA MD. PORT.CAT.II (KG)",
+    "ingredientes": [
+      {
+        "id": 200002,
+        "produto": "Ingrediente 1",
+        "quantidade": 23,
+        "unidade": "Gramas",
+        "preco": 1,
+        "subtotal": 23
+      }
+    ],
+    "total": 23
   }
 ]

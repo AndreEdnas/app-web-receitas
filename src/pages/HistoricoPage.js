@@ -9,13 +9,33 @@ export default function HistoricoPage() {
   // converter formatos de datas
   const toISO = (s) => {
     if (!s) return "";
+
+    // já está em yyyy-mm-dd
     if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+
+    // dd-mm-yyyy
     const m = s.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-    return m ? `${m[3]}-${m[2]}-${m[1]}` : s;
+    if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+
+    // dd/mm/yyyy (caso venha do toLocaleDateString)
+    const m2 = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (m2) return `${m2[3]}-${m2[2]}-${m2[1]}`;
+
+    // fallback: tentar converter
+    const d = new Date(s);
+    if (!isNaN(d)) return d.toISOString().slice(0, 10);
+
+    console.warn("⚠️ Data inválida:", s);
+    return "";
   };
 
+
+
   const getWeekKey = (dateStr) => {
+    if (!dateStr) return "";
     const d = new Date(dateStr);
+    if (isNaN(d)) return "";
+
     d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() + 4 - (d.getDay() || 7));
     const yearStart = new Date(d.getFullYear(), 0, 1);
@@ -39,7 +59,11 @@ export default function HistoricoPage() {
     const sunday = new Date(ISOweekStart);
     sunday.setDate(monday.getDate() + 6);
 
-    const fmt = (x) => x.toISOString().slice(0, 10);
+    const fmt = (x) => {
+      if (!x || isNaN(x)) return "";
+      return x.toISOString().slice(0, 10);
+    };
+
     return `${fmt(monday)} → ${fmt(sunday)}`;
   };
 
@@ -97,9 +121,28 @@ export default function HistoricoPage() {
   const diasSemana =
     semanaSelecionada
       ? Object.entries(abates)
-          .filter(([dia]) => getWeekKey(dia) === semanaSelecionada)
-          .sort(([a], [b]) => new Date(a) - new Date(b))
+        .filter(([dia]) => getWeekKey(dia) === semanaSelecionada)
+        .sort(([a], [b]) => new Date(a) - new Date(b))
       : [];
+
+  const resumoReceitasDia = (registos) => {
+    const mapa = {};
+
+    registos.forEach((abate) => {
+      abate.registros?.forEach((r) => {
+        if (r.tipo === "receita") {
+          if (!mapa[r.nome]) {
+            mapa[r.nome] = { talao: 0, bd: 0 };
+          }
+          if (r.origem === "bd") mapa[r.nome].bd += r.qtd;
+          else mapa[r.nome].talao += r.qtd;
+        }
+      });
+    });
+
+    return mapa;
+  };
+
 
   return (
     <div className="container mt-4">
@@ -149,6 +192,26 @@ export default function HistoricoPage() {
               </div>
 
               <div className="card-body p-0">
+
+                {/* RESUMO DAS RECEITAS */}
+                {(() => {
+                  const resumo = resumoReceitasDia(registos);
+                  const linhas = Object.entries(resumo).map(([nome, dados]) => {
+                    const partes = [];
+                    if (dados.talao > 0) partes.push(`${dados.talao} ${nome}(s) Talão`);
+                    if (dados.bd > 0) partes.push(`${dados.bd} ${nome}(s) BD`);
+                    return partes.join(" + ");
+                  });
+
+                  return (
+                    linhas.length > 0 && (
+                      <div className="p-2 ps-3 bg-warning bg-opacity-25 border-bottom fw-bold">
+                        📦 {linhas.join(" / ")}
+                      </div>
+                    )
+                  );
+                })()}
+
                 <div className="table-responsive">
                   <table className="table table-hover table-striped mb-0 align-middle">
                     <thead className="table-light">

@@ -1,157 +1,107 @@
 {
-  "11-09-2025": [
+  "2025-11-28": [
     {
-      "id": 1757694925102,
+      "id": 1764354053069,
       "registros": [
         {
-          "tipo": "produto",
-          "codigo": 27,
-          "produto": "ABOBORA C/CASCA FATIA PORT.CAT.II (KG)",
-          "antes": -14,
-          "abate": 1,
-          "depois": -15
-        },
-        {
-          "tipo": "produto",
-          "codigo": 56,
-          "produto": "AGRIÃO PORT.CAT.II (UN)",
-          "antes": -14,
-          "abate": 1,
-          "depois": -15
-        },
-        {
           "tipo": "receita",
-          "nome": "ABACAXI DELMONTE CAT.II (KG)",
-          "qtd": 2,
+          "nome": "BANANA EXTRA COSTA RICA (KG)",
+          "qtd": 1,
           "produtos": [
             {
-              "codigo": 1,
-              "produto": "ABACAXI DELMONTE CAT.II (KG)",
-              "antes": 56.5,
-              "abate": 2,
-              "depois": 54.5
+              "codigo": 200002,
+              "produto": "Ingrediente 1",
+              "antes": -47,
+              "abate": 1,
+              "depois": -48
             }
           ]
-        },
-        {
-          "tipo": "produto",
-          "codigo": 11,
-          "produto": "MAÇÃ GOLDEN PORT.CATII (KG)",
-          "antes": -29,
-          "abate": 2,
-          "depois": -31
-        },
-        {
-          "tipo": "venda",
-          "codigo": 381,
-          "produto": "Bacalhau Lagareiro",
-          "antes": 97,
-          "abate": 1,
-          "depois": 96
-        }
-      ]
-    }
-  ],
-  "12-09-2025": [
-    {
-      "id": 1757695487950,
-      "registros": [
-        {
-          "tipo": "produto",
-          "codigo": 27,
-          "produto": "ABOBORA C/CASCA FATIA PORT.CAT.II (KG)",
-          "antes": -15,
-          "abate": 1,
-          "depois": -16
-        },
-        {
-          "tipo": "produto",
-          "codigo": 56,
-          "produto": "AGRIÃO PORT.CAT.II (UN)",
-          "antes": -15,
-          "abate": 1,
-          "depois": -16
-        },
-        {
-          "tipo": "receita",
-          "nome": "ABACAXI DELMONTE CAT.II (KG)",
-          "qtd": 2,
-          "produtos": [
-            {
-              "codigo": 1,
-              "produto": "ABACAXI DELMONTE CAT.II (KG)",
-              "antes": 54.5,
-              "abate": 2,
-              "depois": 52.5
-            }
-          ]
-        },
-        {
-          "tipo": "produto",
-          "codigo": 11,
-          "produto": "MAÇÃ GOLDEN PORT.CATII (KG)",
-          "antes": -31,
-          "abate": 2,
-          "depois": -33
-        },
-        {
-          "tipo": "venda",
-          "codigo": 19,
-          "produto": "PERA ABACATE CAT.II (KG)",
-          "antes": 1,
-          "abate": 1,
-          "depois": 0
         }
       ]
     },
     {
-      "id": 1757695536852,
+      "id": 1764354065334,
       "registros": [
         {
-          "tipo": "produto",
-          "codigo": 27,
-          "produto": "ABOBORA C/CASCA FATIA PORT.CAT.II (KG)",
-          "antes": -16,
-          "abate": 1,
-          "depois": -17
-        },
-        {
-          "tipo": "produto",
-          "codigo": 56,
-          "produto": "AGRIÃO PORT.CAT.II (UN)",
-          "antes": -16,
-          "abate": 1,
-          "depois": -17
-        },
-        {
           "tipo": "receita",
-          "nome": "ABACAXI DELMONTE CAT.II (KG)",
-          "qtd": 2,
+          "nome": "Crepe",
+          "qtd": 4,
           "produtos": [
             {
-              "codigo": 1,
-              "produto": "ABACAXI DELMONTE CAT.II (KG)",
-              "antes": 52.5,
-              "abate": 2,
-              "depois": 50.5
+              "codigo": 200002,
+              "produto": "Ingrediente 1",
+              "antes": -48,
+              "abate": 4,
+              "depois": -53
+            },
+            {
+              "codigo": 200003,
+              "produto": "Ingrediente 2",
+              "antes": -45,
+              "abate": 4,
+              "depois": -50
             }
           ]
         },
         {
-          "tipo": "produto",
-          "codigo": 11,
-          "produto": "MAÇÃ GOLDEN PORT.CATII (KG)",
-          "antes": -33,
-          "abate": 2,
-          "depois": -35
-        },
+          "tipo": "receita",
+          "origem": "bd",
+          "nome": "Crepe",
+          "qtd": 1,
+          "produtos": [
+            {
+              "codigo": 200002,
+              "produto": "Ingrediente 1",
+              "antes": -48,
+              "abate": 1,
+              "depois": -53
+            },
+            {
+              "codigo": 200003,
+              "produto": "Ingrediente 2",
+              "antes": -45,
+              "abate": 1,
+              "depois": -50
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 1764354096544,
+      "registros": [
         {
-          "tipo": "venda",
-          "codigo": 19,
-          "produto": "PERA ABACATE CAT.II (KG)",
-          "antes": 0,
-          "abate": 1,
-          "depois": -1
+          "tipo": "receita",
+          "nome": "BANANA EXTRA COSTA RICA (KG)",
+          "qtd": 1,
+          "produtos": [
+            {
+              "codigo": 200002,
+              "produto": "Ingrediente 1",
+              "antes": -53,
+              "abate": 1,
+              "depois": -54
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 1764354146006,
+      "registros": [
+        {
+          "tipo": "receita",
+          "nome": "MAÇÃ REINETA MD. PORT.CAT.II (KG)",
+          "qtd": 1,
+          "produtos": [
+            {
+              "codigo": 200002,
+              "produto": "Ingrediente 1",
+              "antes": -54,
+              "abate": 23,
+              "depois": -77
+            }
+          ]
         }
       ]
     }

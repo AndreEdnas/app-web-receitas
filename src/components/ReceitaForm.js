@@ -482,6 +482,7 @@ export function ReceitaForm({
         )}
       </div>
 
+
       {/* INGREDIENTES */}
       <label className="form-label fw-bold">Ingredientes</label>
       {ingredientes.map((ing, i) => {
