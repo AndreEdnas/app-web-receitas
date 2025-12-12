@@ -187,25 +187,14 @@ export function ReceitaForm({
           (p) => (p.descricao || "").toLowerCase() === lower
         ) || null;
 
-      if (produtoSelecionado) {
-        novos[index].id = produtoSelecionado.codigo;
-        novos[index].unidade = produtoSelecionado.unidade?.descricao || "";
-        novos[index].preco = Number(produtoSelecionado.precocompra) || 0;
-      } else {
-        novos[index].id = null;
-        novos[index].preco = 0;
-        novos[index].unidade = "";
-      }
+      novos[index].unidade = produtoSelecionado?.unidade?.descricao || "";
+      const preco = produtoSelecionado?.precocompra;
+      novos[index].preco =
+        preco !== undefined && preco !== null ? Number(preco) : 0;
     }
-
-    // 🔥 ESTE BLOCO
-    const qtd = parseFloat(novos[index].quantidade) || 0;
-    const preco = Number(novos[index].preco) || 0;
-    novos[index].subtotal = preco * qtd;
 
     setIngredientes(novos);
   };
-
 
   const escolherProdutoIngrediente = (rowIdx, produtoObj) => {
     const novos = [...ingredientes];
